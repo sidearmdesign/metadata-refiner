@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Metadata Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        .image-card { margin: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+        .metadata-fields { margin-top: 1rem; }
+        .progress-bar { 
+            transition: width 0.3s ease;
+        }
+        .progress-bar.complete {
+            background-color: #198754;
+            width: 100% !important;
+        }
+        #drop-zone { border: 2px dashed #ccc; padding: 2rem; text-align: center; margin: 1rem 0; }
+        .dragover { border-color: #0d6efd; background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="mb-4">Image Metadata Manager</h1>
+        
+        <div id="drop-zone" class="mb-4">
+            <p>Drag & drop images here or</p>
+            <input type="file" id="file-input" multiple accept="image/*" class="form-control">
+        </div>
+
+        <div id="image-grid" class="row"></div>
+
+        <div class="mt-4 mb-4">
+            <div class="mt-3">
+                <button id="generate-all" class="btn btn-primary" disabled>Generate All Metadata</button>
+                <button id="export" class="btn btn-success" disabled>Export to CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        // Drag & drop handlers
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        // Socket.io handlers
+        socket.on('metadata_update', (data) => {
+            const card = document.querySelector(`[data-image-path="${data.image}"]`);
+            if (card) {
+                card.querySelector('.title-input').value = data.metadata.title;
+                card.querySelector('.description-input').value = data.metadata.description;
+                card.querySelector('.tags-input').value = data.metadata.tags;
+                card.querySelector('.category-input').value = data.metadata.category;
+                const progressBar = card.querySelector('.progress-bar');
+                progressBar.style.width = '100%';
+                progressBar.textContent = 'Complete';
+                progressBar.classList.add('complete');
+            }
+        });
+
+        socket.on('progress', (data) => {
+            const card = document.querySelector(`[data-image-path="${data.image}"]`);
+            if (card) {
+                const progressBar = card.querySelector('.progress-bar');
+                progressBar.style.width = '0%';
+                progressBar.textContent = 'Analyzing image...';
+                
+                // Animate progress bar
+                let width = 0;
+                const interval = setInterval(() => {
+                    width += 1;
+                    progressBar.style.width = width + '%';
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        progressBar.textContent = 'Processing...';
+                    }
+                }, 50);
+            }
+        });
+
+        socket.on('error', (data) => {
+            alert(`Error processing ${data.image}: ${data.message}`);
+        });
+
+        async function handleFiles(files) {
+            const formData = new FormData();
+            Array.from(files).forEach(file => formData.append('images', file));
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const { images } = await response.json();
+                images.forEach(createImageCard);
+                document.getElementById('generate-all').disabled = false;
+                document.getElementById('export').disabled = false;
+            } catch (error) {
+                alert('Upload failed: ' + error.message);
+            }
+        }
+
+        function createImageCard(image) {
+            const col = document.createElement('div');
+            col.className = 'col-md-4';
+            col.innerHTML = `
+                <div class="image-card" data-image-path="${image.path}">
+                    <img src="${image.path}" class="img-thumbnail" style="max-height: 200px;">
+                    <div class="metadata-fields">
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Title</label>
+                            <input type="text" class="form-control title-input" value="${image.title}">
+                        </div>
+                        <div class="mb-3">
+                            <label>Description</label>
+                            <textarea class="form-control description-input">${image.description}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label>Tags</label>
+                            <input type="text" class="form-control tags-input" value="${image.tags}">
+                        </div>
+                        <div class="mb-3">
+                            <label>Category</label>
+                            <input type="text" class="form-control category-input" value="">
+                        </div>
+                        <button class="btn btn-sm btn-warning generate-single">Regenerate AI Metadata</button>
+                    </div>
+                </div>
+            `;
+
+            col.querySelector('.generate-single').addEventListener('click', () => {
+                socket.emit('generate_metadata', { 
+                    path: image.path 
+                });
+            });
+
+            document.getElementById('image-grid').appendChild(col);
+        }
+
+        document.getElementById('generate-all').addEventListener('click', () => {
+            document.querySelectorAll('.image-card').forEach(card => {
+                socket.emit('generate_metadata', {
+                    path: card.dataset.imagePath
+                });
+            });
+        });
+
+        document.getElementById('export').addEventListener('click', async () => {
+            const metadata = Array.from(document.querySelectorAll('.image-card')).map(card => ({
+                path: card.dataset.imagePath,
+                filename: card.querySelector('img').src.split('/').pop(),
+                title: card.querySelector('.title-input').value,
+                description: card.querySelector('.description-input').value,
+                tags: card.querySelector('.tags-input').value,
+                category: card.querySelector('.category-input').value
+            }));
+
+            try {
+                const response = await fetch('/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(metadata)
+                });
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'metadata.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (error) {
+                alert('Export failed: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

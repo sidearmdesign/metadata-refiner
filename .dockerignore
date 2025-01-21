@@ -1,0 +1,26 @@
+# Git
+.git
+.gitignore
+
+# Local development
+.env
+venv/
+.env.local
+.env.development
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Temp files
+*.swp
+*.swo

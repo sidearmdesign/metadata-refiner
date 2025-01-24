@@ -74,10 +74,35 @@
 
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
-        // Socket.io handlers
+        // Socket.io handlers and progress tracking
+        let processingCount = 0;
+        
+        function updateProgress() {
+            const btn = document.getElementById('generate-all');
+            if (processingCount > 0) {
+                btn.textContent = `Processing (${processingCount} remaining)`;
+                btn.disabled = true;
+            } else {
+                btn.textContent = 'Generate All Metadata';
+                btn.disabled = false;
+            }
+        }
+
+        socket.on('processing_start', (data) => {
+            const card = document.querySelector(`[data-image-path="${data.image}"]`);
+            if (card) {
+                processingCount++;
+                updateProgress();
+                card.classList.add('processing');
+                card.classList.remove('complete');
+            }
+        });
+
         socket.on('metadata_update', (data) => {
             const card = document.querySelector(`[data-image-path="${data.image}"]`);
             if (card) {
+                processingCount--;
+                updateProgress();
                 card.querySelector('.title-input').value = data.metadata.title;
                 card.querySelector('.description-input').value = data.metadata.description;
                 card.querySelector('.tags-input').value = data.metadata.tags;
@@ -87,15 +112,13 @@
             }
         });
 
-        socket.on('processing_start', (data) => {
+        socket.on('error', (data) => {
+            processingCount--;
+            updateProgress();
             const card = document.querySelector(`[data-image-path="${data.image}"]`);
             if (card) {
-                card.classList.add('processing');
-                card.classList.remove('complete');
+                card.classList.remove('processing');
             }
-        });
-
-        socket.on('error', (data) => {
             alert(`Error processing ${data.image}: ${data.message}`);
         });
 

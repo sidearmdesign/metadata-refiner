@@ -13,10 +13,13 @@ from io import BytesIO
 # Load environment variables
 load_dotenv()
 
-# Configure Flask and SocketIO
+# Configure Flask and SocketIO with async support
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, 
+                  cors_allowed_origins="*",
+                  async_mode='threading',
+                  max_http_buffer_size=100 * 1024 * 1024)  # 100MB max for base64 images
 app.config['UPLOAD_FOLDER'] = 'static/images/'
 
 @app.route('/')
@@ -44,12 +47,20 @@ def upload():
 
     return jsonify({'images': image_data})
 
+from concurrent.futures import ThreadPoolExecutor
+processing_executor = ThreadPoolExecutor(max_workers=4)
+
 @socketio.on('generate_metadata')
 def handle_generate_metadata(data):
+    # Submit to thread pool and return immediately
+    processing_executor.submit(process_image_async, data, request.sid)
+
+def process_image_async(data, sid):
+    image_path = data['path']
     try:
-        image_path = data['path']
-        print(f"\nAI processing started for {image_path}", flush=True)
-        emit('processing_start', {'image': image_path})
+        with app.app_context():
+            print(f"\nAI processing started for {image_path}", flush=True)
+            socketio.emit('processing_start', {'image': image_path}, room=sid)
         
         # Encode image to base64
         with Image.open(image_path) as img:
@@ -167,17 +178,27 @@ RETURN JSON FORMAT:
             )
 
         print(f"AI processing completed for {image_path}", flush=True)
-        emit('metadata_update', {
-            'image': image_path,
-            'metadata': metadata,
-            'status': 'complete'
-        })
+        try:
+            print(f"Emitting metadata_update for {image_path} to room {sid}", flush=True)
+            socketio.emit('metadata_update', {
+                'image': image_path,
+                'metadata': metadata,
+                'status': 'complete'
+            }, room=sid)
+            print("Metadata_update emission completed", flush=True)
+        except Exception as e:
+            print(f"Error emitting metadata_update: {str(e)}", flush=True)
 
     except Exception as e:
-        emit('error', {
-            'image': image_path,
-            'message': f"Metadata generation failed: {str(e)}"
-        })
+        try:
+            print(f"Emitting error for {image_path} to room {sid}", flush=True)
+            socketio.emit('error', {
+                'image': image_path,
+                'message': f"Metadata generation failed: {str(e)}"
+            }, room=sid)
+            print("Error emission completed", flush=True)
+        except Exception as e:
+            print(f"Error emitting error event: {str(e)}", flush=True)
 
 @app.route('/export', methods=['POST'])
 def export():

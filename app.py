@@ -62,10 +62,14 @@ def process_image_async(data, sid):
             socketio.emit('processing_start', {'image': image_path}, room=sid)
         
         # Encode image to base64
-        with Image.open(image_path) as img:
-            buffered = BytesIO()
-            img.save(buffered, format=img.format)
-            img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+            with Image.open(image_path) as img:
+                # Resize and optimize image before sending to API
+                img.thumbnail((1024, 1024))
+                
+                buffered = BytesIO()
+                img.save(buffered, format='JPEG', quality=85, optimize=True)
+                
+                img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
 
         # Call OpenAI API
         client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
@@ -155,7 +159,7 @@ RETURN JSON FORMAT:
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:image/{img.format};base64,{img_base64}"
+                                "url": f"data:image/jpeg;base64,{img_base64}"
                             }
                         }
                     ]

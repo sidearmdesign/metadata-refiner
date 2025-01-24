@@ -5,17 +5,31 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        .image-card { margin: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
-        .metadata-fields { margin-top: 1rem; }
-        .progress-bar { 
-            transition: width 0.3s ease;
+        .image-card { 
+            margin: 1rem; 
+            padding: 1rem; 
+            border: 1px solid #ddd; 
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
         }
-        .progress-bar.complete {
-            background-color: #198754;
-            width: 100% !important;
+        .image-card.processing {
+            background-color: #f8f9fa;
+            border-color: #0d6efd;
         }
-        #drop-zone { border: 2px dashed #ccc; padding: 2rem; text-align: center; margin: 1rem 0; }
-        .dragover { border-color: #0d6efd; background-color: #f8f9fa; }
+        .image-card.complete {
+            background-color: #d1e7dd;
+            border-color: #198754;
+        }
+        #drop-zone { 
+            border: 2px dashed #ccc; 
+            padding: 2rem; 
+            text-align: center; 
+            margin: 1rem 0; 
+        }
+        .dragover { 
+            border-color: #0d6efd; 
+            background-color: #f8f9fa; 
+        }
     </style>
 </head>
 <body>
@@ -68,30 +82,16 @@
                 card.querySelector('.description-input').value = data.metadata.description;
                 card.querySelector('.tags-input').value = data.metadata.tags;
                 card.querySelector('.category-input').value = data.metadata.category;
-                const progressBar = card.querySelector('.progress-bar');
-                progressBar.style.width = '100%';
-                progressBar.textContent = 'Complete';
-                progressBar.classList.add('complete');
+                card.classList.add('complete');
+                card.classList.remove('processing');
             }
         });
 
-        socket.on('progress', (data) => {
+        socket.on('processing_start', (data) => {
             const card = document.querySelector(`[data-image-path="${data.image}"]`);
             if (card) {
-                const progressBar = card.querySelector('.progress-bar');
-                progressBar.style.width = '0%';
-                progressBar.textContent = 'Analyzing image...';
-                
-                // Animate progress bar
-                let width = 0;
-                const interval = setInterval(() => {
-                    width += 1;
-                    progressBar.style.width = width + '%';
-                    if (width >= 100) {
-                        clearInterval(interval);
-                        progressBar.textContent = 'Processing...';
-                    }
-                }, 50);
+                card.classList.add('processing');
+                card.classList.remove('complete');
             }
         });
 
@@ -125,9 +125,6 @@
                 <div class="image-card" data-image-path="${image.path}">
                     <img src="${image.path}" class="img-thumbnail" style="max-height: 200px;">
                     <div class="metadata-fields">
-                        <div class="progress mb-2">
-                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-                        </div>
                         <div class="mb-3">
                             <label>Title</label>
                             <input type="text" class="form-control title-input" value="${image.title}">

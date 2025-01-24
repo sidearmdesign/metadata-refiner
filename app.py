@@ -49,7 +49,7 @@ def handle_generate_metadata(data):
     try:
         image_path = data['path']
         print(f"\nAI processing started for {image_path}", flush=True)
-        emit('progress', {'status': 'processing', 'image': image_path})
+        emit('processing_start', {'image': image_path})
         
         # Encode image to base64
         with Image.open(image_path) as img:

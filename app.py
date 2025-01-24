@@ -37,8 +37,7 @@ def upload():
         image.save(filepath)
 
         image_data.append({
-            'path': filepath,
-            'filename': filename,
+            'full_path': filepath,
             'title': '',
             'description': '',
             'tags': '',
@@ -56,7 +55,7 @@ def handle_generate_metadata(data):
     processing_executor.submit(process_image_async, data, request.sid)
 
 def process_image_async(data, sid):
-    image_path = data['path']
+    image_path = data['full_path']
     try:
         with app.app_context():
             print(f"\nAI processing started for {image_path}", flush=True)

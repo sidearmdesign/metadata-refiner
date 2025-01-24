@@ -145,8 +145,8 @@
             const col = document.createElement('div');
             col.className = 'col-md-4';
             col.innerHTML = `
-                <div class="image-card" data-image-path="${image.path}">
-                    <img src="${image.path}" class="img-thumbnail" style="max-height: 200px;">
+                <div class="image-card" data-image-path="${image.full_path}">
+                    <img src="${image.full_path}" class="img-thumbnail" style="max-height: 200px;">
                     <div class="metadata-fields">
                         <div class="mb-3">
                             <label>Title</label>
@@ -171,7 +171,7 @@
 
             col.querySelector('.generate-single').addEventListener('click', () => {
                 socket.emit('generate_metadata', { 
-                    path: image.path 
+                    full_path: image.full_path 
                 });
             });
 
@@ -181,15 +181,14 @@
         document.getElementById('generate-all').addEventListener('click', () => {
             document.querySelectorAll('.image-card').forEach(card => {
                 socket.emit('generate_metadata', {
-                    path: card.dataset.imagePath
+                    full_path: card.dataset.imagePath
                 });
             });
         });
 
         document.getElementById('export').addEventListener('click', async () => {
             const metadata = Array.from(document.querySelectorAll('.image-card')).map(card => ({
-                path: card.dataset.imagePath,
-                filename: card.querySelector('img').src.split('/').pop(),
+                full_path: card.dataset.imagePath,
                 title: card.querySelector('.title-input').value,
                 description: card.querySelector('.description-input').value,
                 tags: card.querySelector('.tags-input').value,

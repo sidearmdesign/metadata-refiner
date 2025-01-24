@@ -10,7 +10,7 @@
         "Love", "Music", "Nature", "Other", "Patterns", "People",
         "Sayings", "Space", "Spiritual", "Sports", "Technology"
       ],
-      "csv_columns": ["title", "description", "tags", "category"]
+      "csv_columns": ["full_path", "title", "description", "tags", "category"]
     },
     "adobe_stock": {
       "name": "Adobe Stock",
@@ -22,7 +22,7 @@
         "Holidays", "Industrial", "Nature", "Objects", "People",
         "Religion", "Science", "Sports", "Technology", "Transportation"
       ],
-      "csv_columns": ["title", "tags", "category"]
+      "csv_columns": ["full_path", "title", "tags", "category"]
     }
   }
 }

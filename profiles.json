@@ -1,0 +1,28 @@
+{
+  "profiles": {
+    "zedge": {
+      "name": "Zedge",
+      "prompt": "CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:\n1. CATEGORY MUST BE FROM THIS EXACT LIST (NO variations/additions):\n   - Animals\n   - Anime\n   - Cars & Vehicles\n   - Comics\n   - Designs\n   - Drawings\n   - Entertainment\n   - Funny\n   - Games\n   - Holidays\n   - Love\n   - Music\n   - Nature\n   - Other\n   - Patterns\n   - People\n   - Sayings\n   - Space\n   - Spiritual\n   - Sports\n   - Technology\n\nOTHER RULES:\n\n**TITLE RULES**\n- 30-60 characters\n- Descriptive and creative\n- NO filler words (with/of/from/in/on/at)\n- NO punctuation\n\n**TAGS RULES** \n- Exactly 10 single-word tags\n- Specific and relevant to image content\n- Separated by commas\n\n**DESCRIPTION RULES**\n- 100-150 characters\n- SEO-optimized\n- Descriptive narrative\n\n**CATEGORY RULES**\n- MUST CHOOSE ONE FROM THIS EXACT LIST:\n  Animals, Anime, Cars & Vehicles, Comics, Designs, \n  Drawings, Entertainment, Funny, Games, Holidays,\n  Love, Music, Nature, Other, Patterns, People,\n  Sayings, Space, Spiritual, Sports, Technology\n\nRETURN JSON FORMAT:\n{\n  \"title\": \"...\",\n  \"description\": \"...\",\n  \"tags\": \"tag1,tag2,...,tag10\",\n  \"category\": \"EXACT_CATEGORY_FROM_LIST\"\n}",
+      "required_fields": ["title", "description", "tags", "category"],
+      "categories": [
+        "Animals", "Anime", "Cars & Vehicles", "Comics", "Designs",
+        "Drawings", "Entertainment", "Funny", "Games", "Holidays",
+        "Love", "Music", "Nature", "Other", "Patterns", "People",
+        "Sayings", "Space", "Spiritual", "Sports", "Technology"
+      ],
+      "csv_columns": ["title", "description", "tags", "category"]
+    },
+    "adobe_stock": {
+      "name": "Adobe Stock",
+      "prompt": "CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:\n1. CATEGORY MUST BE FROM THIS EXACT LIST:\n   - Animals\n   - Architecture\n   - Art\n   - Backgrounds\n   - Beauty\n   - Business\n   - Education\n   - Fashion\n   - Food\n   - Health\n   - Holidays\n   - Industrial\n   - Nature\n   - Objects\n   - People\n   - Religion\n   - Science\n   - Sports\n   - Technology\n   - Transportation\n\nOTHER RULES:\n\n**TITLE RULES**\n- 40-70 characters\n- No special characters\n- Include main subject first\n\n**TAGS RULES**\n- 7-12 tags\n- Include conceptual and literal terms\n- Proper nouns capitalized\n\n**CATEGORY RULES**\n- Must match exact Adobe Stock categories\n\nRETURN JSON FORMAT:\n{\n  \"title\": \"...\",\n  \"tags\": \"tag1,atg2,...\",\n  \"category\": \"EXACT_CATEGORY_FROM_LIST\"\n}",
+      "required_fields": ["title", "tags", "category"],
+      "categories": [
+        "Animals", "Architecture", "Art", "Backgrounds", "Beauty",
+        "Business", "Education", "Fashion", "Food", "Health",
+        "Holidays", "Industrial", "Nature", "Objects", "People",
+        "Religion", "Science", "Sports", "Technology", "Transportation"
+      ],
+      "csv_columns": ["title", "tags", "category"]
+    }
+  }
+}

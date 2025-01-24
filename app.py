@@ -10,8 +10,10 @@ from dotenv import load_dotenv
 import base64
 from io import BytesIO
 
-# Load environment variables
+# Load environment variables and profiles
 load_dotenv()
+with open('profiles.json') as f:
+    PROFILES = json.load(f)['profiles']
 
 # Configure Flask and SocketIO with async support
 app = Flask(__name__)
@@ -52,9 +54,10 @@ processing_executor = ThreadPoolExecutor(max_workers=4)
 @socketio.on('generate_metadata')
 def handle_generate_metadata(data):
     # Submit to thread pool and return immediately
-    processing_executor.submit(process_image_async, data, request.sid)
+    processing_executor.submit(process_image_async, data, request.sid, data.get('profile', 'zedge'))
 
-def process_image_async(data, sid):
+def process_image_async(data, sid, profile_name):
+    profile = PROFILES[profile_name]
     image_path = data['full_path']
     try:
         with app.app_context():
@@ -73,22 +76,9 @@ def process_image_async(data, sid):
 
         # Call OpenAI API
         client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        # Single source of truth for valid categories
-        valid_categories = {
-            'Animals', 'Anime', 'Cars & Vehicles', 'Comics', 'Designs',
-            'Drawings', 'Entertainment', 'Funny', 'Games', 'Holidays',
-            'Love', 'Music', 'Nature', 'Other', 'Patterns', 'People',
-            'Sayings', 'Space', 'Spiritual', 'Sports', 'Technology'
-        }
-        
-        # Build validation-aware prompt using the categories
-        category_list = '\n'.join(f'- {cat}' for cat in sorted(valid_categories))
-        system_message = f"""You MUST follow these rules:
-1. Category MUST be exactly one of:
-{category_list}
-2. Title: 30-60 chars, no filler words/punctuation
-3. Description: 100-150 SEO-optimized chars
-4. Tags: 10 comma-separated single words"""
+        # Use profile-specific configuration
+        system_message = profile['prompt']
+        valid_categories = set(profile['categories'])
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -100,62 +90,7 @@ def process_image_async(data, sid):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": data.get('prompt', """CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
-1. CATEGORY MUST BE FROM THIS EXACT LIST (NO variations/additions):
-   - Animals
-   - Anime
-   - Cars & Vehicles
-   - Comics
-   - Designs
-   - Drawings
-   - Entertainment
-   - Funny
-   - Games
-   - Holidays
-   - Love
-   - Music
-   - Nature
-   - Other
-   - Patterns
-   - People
-   - Sayings
-   - Space
-   - Spiritual
-   - Sports
-   - Technology
-
-OTHER RULES:
-
-**TITLE RULES**
-- 30-60 characters
-- Descriptive and creative
-- NO filler words (with/of/from/in/on/at)
-- NO punctuation
-
-**TAGS RULES** 
-- Exactly 10 single-word tags
-- Specific and relevant to image content
-- Separated by commas
-
-**DESCRIPTION RULES**
-- 100-150 characters
-- SEO-optimized
-- Descriptive narrative
-
-**CATEGORY RULES**
-- MUST CHOOSE ONE FROM THIS EXACT LIST:
-  Animals, Anime, Cars & Vehicles, Comics, Designs, 
-  Drawings, Entertainment, Funny, Games, Holidays,
-  Love, Music, Nature, Other, Patterns, People,
-  Sayings, Space, Spiritual, Sports, Technology
-
-RETURN JSON FORMAT:
-{
-  "title": "...",
-  "description": "...",
-  "tags": "tag1,tag2,...,tag10",
-  "category": "EXACT_CATEGORY_FROM_LIST"
-}""")},
+                        {"type": "text", "text": "Generate metadata for this image following the provided rules"},
                         {
                             "type": "image_url",
                             "image_url": {
@@ -170,7 +105,7 @@ RETURN JSON FORMAT:
 
         # Parse and validate response
         metadata = json.loads(response.choices[0].message.content)
-        required_fields = ['title', 'description', 'tags', 'category']
+        required_fields = profile['required_fields']
         if not all(field in metadata for field in required_fields):
             raise ValueError("Missing required fields in AI response")
             
@@ -205,9 +140,17 @@ RETURN JSON FORMAT:
 
 @app.route('/export', methods=['POST'])
 def export():
-    metadata = request.json
-    df = pd.DataFrame(metadata)
-    csv_path = 'metadata.csv'
+    metadata = request.json.get('data', [])
+    profile_name = request.json.get('profile', 'zedge')
+    profile = PROFILES[profile_name]
+    
+    # Map data to profile-specific CSV columns
+    df = pd.DataFrame([{
+        col: item.get(col.lower(), '')
+        for col in profile['csv_columns']
+    } for item in metadata])
+    
+    csv_path = f'metadata_{profile_name}.csv'
     df.to_csv(csv_path, index=False)
     return send_file(csv_path, as_attachment=True)
 

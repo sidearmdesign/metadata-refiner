@@ -43,6 +43,14 @@
     <div class="container py-4">
         <h1 class="mb-4">Image Metadata Manager</h1>
         
+        <div class="mb-4">
+            <label class="form-label">Output Profile:</label>
+            <select id="profile-select" class="form-select">
+                <option value="zedge">Zedge</option>
+                <option value="adobe_stock">Adobe Stock</option>
+            </select>
+        </div>
+        
         <div id="drop-zone" class="mb-4">
             <p>Drag & drop images here or</p>
             <input type="file" id="file-input" multiple accept="image/*" class="form-control">
@@ -159,17 +167,61 @@
                             <label>Title</label>
                             <input type="text" class="form-control title-input" value="${image.title}">
                         </div>
-                        <div class="mb-3">
+                        ${document.getElementById('profile-select').value === 'zedge' ? `
+                        <div class="mb-3 description-field">
                             <label>Description</label>
                             <textarea class="form-control description-input">${image.description}</textarea>
-                        </div>
+                        </div>` : ''}
                         <div class="mb-3">
                             <label>Tags</label>
                             <input type="text" class="form-control tags-input" value="${image.tags}">
                         </div>
                         <div class="mb-3">
                             <label>Category</label>
-                            <input type="text" class="form-control category-input" value="">
+                            <select class="form-select category-input">
+                                ${document.getElementById('profile-select').value === 'zedge' ? 
+                                    `<option value="Animals">Animals</option>
+                                    <option value="Anime">Anime</option>
+                                    <option value="Cars & Vehicles">Cars & Vehicles</option>
+                                    <option value="Comics">Comics</option>
+                                    <option value="Designs">Designs</option>
+                                    <option value="Drawings">Drawings</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Funny">Funny</option>
+                                    <option value="Games">Games</option>
+                                    <option value="Holidays">Holidays</option>
+                                    <option value="Love">Love</option>
+                                    <option value="Music">Music</option>
+                                    <option value="Nature">Nature</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Patterns">Patterns</option>
+                                    <option value="People">People</option>
+                                    <option value="Sayings">Sayings</option>
+                                    <option value="Space">Space</option>
+                                    <option value="Spiritual">Spiritual</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Technology">Technology</option>` : 
+                                    `<option value="Animals">Animals</option>
+                                    <option value="Architecture">Architecture</option>
+                                    <option value="Art">Art</option>
+                                    <option value="Backgrounds">Backgrounds</option>
+                                    <option value="Beauty">Beauty</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Fashion">Fashion</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Holidays">Holidays</option>
+                                    <option value="Industrial">Industrial</option>
+                                    <option value="Nature">Nature</option>
+                                    <option value="Objects">Objects</option>
+                                    <option value="People">People</option>
+                                    <option value="Religion">Religion</option>
+                                    <option value="Science">Science</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Transportation">Transportation</option>`}
+                            </select>
                         </div>
                         <button class="btn btn-sm btn-warning generate-single">Regenerate AI Metadata</button>
                     </div>
@@ -177,8 +229,9 @@
             `;
 
             col.querySelector('.generate-single').addEventListener('click', () => {
-                socket.emit('generate_metadata', { 
-                    full_path: image.full_path 
+                socket.emit('generate_metadata', {
+                    full_path: image.full_path,
+                    profile: document.getElementById('profile-select').value
                 });
             });
 
@@ -188,7 +241,8 @@
         document.getElementById('generate-all').addEventListener('click', () => {
             document.querySelectorAll('.image-card').forEach(card => {
                 socket.emit('generate_metadata', {
-                    full_path: card.dataset.imagePath
+                    full_path: card.dataset.imagePath,
+                    profile: document.getElementById('profile-select').value
                 });
             });
         });
@@ -206,7 +260,10 @@
                 const response = await fetch('/export', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(metadata)
+                    body: JSON.stringify({
+                        data: metadata,
+                        profile: document.getElementById('profile-select').value
+                    })
                 });
                 
                 const blob = await response.blob();
@@ -220,6 +277,66 @@
             } catch (error) {
                 alert('Export failed: ' + error.message);
             }
+        });
+    </script>
+    <script>
+        // Add profile change handler
+        document.getElementById('profile-select').addEventListener('change', () => {
+            // Update all existing cards
+            document.querySelectorAll('.image-card').forEach(card => {
+                // Toggle description field
+                const descField = card.querySelector('.description-field');
+                if (descField) {
+                    descField.style.display = document.getElementById('profile-select').value === 'zedge' 
+                        ? 'block' 
+                        : 'none';
+                }
+
+                // Update category dropdown
+                const categorySelect = card.querySelector('.category-input');
+                categorySelect.innerHTML = document.getElementById('profile-select').value === 'zedge'
+                    ? `<option value="Animals">Animals</option>
+                       <option value="Anime">Anime</option>
+                       <option value="Cars & Vehicles">Cars & Vehicles</option>
+                       <option value="Comics">Comics</option>
+                       <option value="Designs">Designs</option>
+                       <option value="Drawings">Drawings</option>
+                       <option value="Entertainment">Entertainment</option>
+                       <option value="Funny">Funny</option>
+                       <option value="Games">Games</option>
+                       <option value="Holidays">Holidays</option>
+                       <option value="Love">Love</option>
+                       <option value="Music">Music</option>
+                       <option value="Nature">Nature</option>
+                       <option value="Other">Other</option>
+                       <option value="Patterns">Patterns</option>
+                       <option value="People">People</option>
+                       <option value="Sayings">Sayings</option>
+                       <option value="Space">Space</option>
+                       <option value="Spiritual">Spiritual</option>
+                       <option value="Sports">Sports</option>
+                       <option value="Technology">Technology</option>`
+                    : `<option value="Animals">Animals</option>
+                       <option value="Architecture">Architecture</option>
+                       <option value="Art">Art</option>
+                       <option value="Backgrounds">Backgrounds</option>
+                       <option value="Beauty">Beauty</option>
+                       <option value="Business">Business</option>
+                       <option value="Education">Education</option>
+                       <option value="Fashion">Fashion</option>
+                       <option value="Food">Food</option>
+                       <option value="Health">Health</option>
+                       <option value="Holidays">Holidays</option>
+                       <option value="Industrial">Industrial</option>
+                       <option value="Nature">Nature</option>
+                       <option value="Objects">Objects</option>
+                       <option value="People">People</option>
+                       <option value="Religion">Religion</option>
+                       <option value="Science">Science</option>
+                       <option value="Sports">Sports</option>
+                       <option value="Technology">Technology</option>
+                       <option value="Transportation">Transportation</option>`;
+            });
         });
     </script>
 </body>

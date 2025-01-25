@@ -1,0 +1,27 @@
+# Environment files
+.env
+
+# CSV files in root directory
+/*.csv
+
+# Image assets
+/static/images/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+*.so
+.Python
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Logs and databases
+*.log
+*.sqlite

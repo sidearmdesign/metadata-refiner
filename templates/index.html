@@ -106,11 +106,12 @@
         }
 
         function checkApiKey() {
-            if (!localStorage.getItem('openai-key')) {
+            const hasKey = !!localStorage.getItem('openai-key');
+            if (!hasKey) {
                 showSettings();
-                return false;
+                alert('Please save your API key in Settings first');
             }
-            return true;
+            return hasKey;
         }
 
         // Add event listener for settings button
@@ -240,10 +241,13 @@
 
             col.querySelector('.delete-btn').addEventListener('click', () => col.remove());
             col.querySelector('.generate-single').addEventListener('click', () => {
+                if (!checkApiKey()) return;
                 socket.emit('generate_metadata', {
                     full_path: image.full_path,
                     profile: document.getElementById('profile-select').value,
-                    api_key: localStorage.getItem('openai-key') || ''
+                    settings: {
+                        apiKey: localStorage.getItem('openai-key') || ''
+                    }
                 });
             });
 
@@ -296,7 +300,10 @@
             document.querySelectorAll('.image-card').forEach(card => {
                 socket.emit('generate_metadata', {
                     full_path: card.dataset.imagePath,
-                    profile: document.getElementById('profile-select').value
+                    profile: document.getElementById('profile-select').value,
+                    settings: {
+                        apiKey: localStorage.getItem('openai-key') || ''
+                    }
                 });
             });
         });

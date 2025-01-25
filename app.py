@@ -72,18 +72,30 @@ processing_executor = ThreadPoolExecutor(max_workers=4)
 
 @socketio.on('generate_metadata')
 def handle_generate_metadata(data):
-    # Submit to thread pool and return immediately
-    processing_executor.submit(process_image_async, data, request.sid, data.get('profile', 'zedge'))
+    # Get API key from request context before spawning thread
+    # Check both settings modal and environment variables
+    # Get API key from nested settings object
+    api_key = data.get('settings', {}).get('apiKey')
+    if not api_key:
+        emit('error', {'image': data['full_path'], 'message': 'No API key provided'})
+        return
+    
+    # Submit to thread pool with explicit API key
+    processing_executor.submit(process_image_async, data, request.sid, data.get('profile', 'zedge'), api_key)
 
-def process_image_async(data, sid, profile_name):
+def process_image_async(data, sid, profile_name, api_key):
     profile = PROFILES[profile_name]
     image_path = data['full_path']
+    
     try:
         with app.app_context():
             print(f"\nAI processing started for {image_path}", flush=True)
             socketio.emit('processing_start', {'image': image_path}, room=sid)
-        
-        # Encode image to base64
+            
+            if not api_key:
+                raise ValueError("No API key provided for OpenAI request")
+
+            # Encode image to base64
             with Image.open(image_path) as img:
                 # Resize and optimize image before sending to API
                 img.thumbnail((1024, 1024))
@@ -93,10 +105,11 @@ def process_image_async(data, sid, profile_name):
                 
                 img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
 
-        # Call OpenAI API
-        client = openai.OpenAI(api_key=data.get('api_key') or g.api_key)
-        # Use profile-specific configuration
-        system_message = profile['prompt']
+        with app.app_context():
+            # Call OpenAI API
+            client = openai.OpenAI(api_key=api_key)
+            # Use profile-specific configuration
+            system_message = profile['prompt']
         valid_categories = set(profile['categories'])
 
         response = client.chat.completions.create(

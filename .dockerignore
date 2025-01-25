@@ -24,3 +24,7 @@ __pycache__/
 # Temp files
 *.swp
 *.swo
+
+# Application data files
+*.csv
+profiles.json

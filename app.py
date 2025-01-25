@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, g
 import json
 from flask_socketio import SocketIO, emit
 import os
+from functools import wraps
 from werkzeug.utils import secure_filename
 from PIL import Image
 import pandas as pd
@@ -14,6 +15,16 @@ from io import BytesIO
 load_dotenv()
 with open('profiles.json') as f:
     PROFILES = json.load(f)['profiles']
+
+def check_api_key(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        api_key = request.headers.get('X-OpenAI-Key') or os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            return jsonify({'error': 'API key required'}), 401
+        g.api_key = api_key
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Configure Flask and SocketIO with async support
 app = Flask(__name__)
@@ -83,7 +94,7 @@ def process_image_async(data, sid, profile_name):
                 img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
 
         # Call OpenAI API
-        client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        client = openai.OpenAI(api_key=data.get('api_key') or g.api_key)
         # Use profile-specific configuration
         system_message = profile['prompt']
         valid_categories = set(profile['categories'])

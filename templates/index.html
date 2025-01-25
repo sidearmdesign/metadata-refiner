@@ -3,6 +3,7 @@
 <head>
     <title>MetaData Refiner</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         .image-card { 
@@ -40,7 +41,10 @@
 </head>
 <body>
     <div class="container py-4">
-        <h1 class="mb-4">MetaData Refiner</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>MetaData Refiner</h1>
+            <button id="settings-btn" class="btn btn-secondary">Settings</button>
+        </div>
         
         <div class="mb-4">
             <label class="form-label">Output Profile:</label>
@@ -62,7 +66,64 @@
         </div>
     </div>
 
+    <div id="settings-modal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">API Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="api-key" class="form-label">OpenAI API Key</label>
+                        <input type="password" class="form-control" id="api-key" 
+                               placeholder="sk-...">
+                        <div class="form-text">Key is stored in browser localStorage</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="saveApiKey()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // API Key handling
+        function showSettings() {
+            const modal = new bootstrap.Modal('#settings-modal');
+            document.getElementById('api-key').value = localStorage.getItem('openai-key') || '';
+            modal.show();
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('api-key').value.trim();
+            if (key) {
+                localStorage.setItem('openai-key', key);
+                bootstrap.Modal.getInstance('#settings-modal').hide();
+            }
+        }
+
+        function checkApiKey() {
+            if (!localStorage.getItem('openai-key')) {
+                showSettings();
+                return false;
+            }
+            return true;
+        }
+
+        // Add event listener for settings button
+        document.getElementById('settings-btn').addEventListener('click', showSettings);
+
+        // Add API key to all fetch requests
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            options.headers = options.headers || {};
+            options.headers['X-OpenAI-Key'] = localStorage.getItem('openai-key') || '';
+            return originalFetch(url, options);
+        };
+
         const socket = io();
         let currentProfile = null;
         let profilesConfig = {};
@@ -181,7 +242,8 @@
             col.querySelector('.generate-single').addEventListener('click', () => {
                 socket.emit('generate_metadata', {
                     full_path: image.full_path,
-                    profile: document.getElementById('profile-select').value
+                    profile: document.getElementById('profile-select').value,
+                    api_key: localStorage.getItem('openai-key') || ''
                 });
             });
 

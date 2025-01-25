@@ -224,9 +224,18 @@
                             </select>
                         </div>
                         <button class="btn btn-sm btn-warning generate-single">Regenerate AI Metadata</button>
+                        <button class="btn btn-sm btn-danger delete-btn" style="margin-left: 8px;">X</button>
                     </div>
                 </div>
             `;
+
+            col.querySelector('.delete-btn').addEventListener('click', () => {
+                if (col.querySelector('.image-card').classList.contains('processing')) {
+                    processingCount--;
+                    updateProgress();
+                }
+                col.remove();
+            });
 
             col.querySelector('.generate-single').addEventListener('click', () => {
                 socket.emit('generate_metadata', {

@@ -28,6 +28,14 @@ app.config['UPLOAD_FOLDER'] = 'static/images/'
 def index():
     return render_template('index.html')
 
+@app.route('/api/profiles')
+def get_profiles():
+    """Return profile configurations for UI rendering"""
+    return jsonify({
+        'profiles': PROFILES,
+        'default_profile': 'zedge'
+    })
+
 @app.route('/upload', methods=['POST'])
 def upload():
     images = request.files.getlist('images')
@@ -118,11 +126,13 @@ def process_image_async(data, sid, profile_name):
         print(f"AI processing completed for {image_path}", flush=True)
         try:
             print(f"Emitting metadata_update for {image_path} to room {sid}", flush=True)
-            socketio.emit('metadata_update', {
+            # Profile-specific response formatting
+            response_data = {
                 'image': image_path,
-                'metadata': metadata,
-                'status': 'complete'
-            }, room=sid)
+                'status': 'complete',
+                'metadata': {k: metadata[k] for k in profile['required_fields']}
+            }
+            socketio.emit('metadata_update', response_data, room=sid)
             print("Metadata_update emission completed", flush=True)
         except Exception as e:
             print(f"Error emitting metadata_update: {str(e)}", flush=True)
@@ -146,7 +156,7 @@ def export():
     
     # Map data to profile-specific CSV columns
     df = pd.DataFrame([{
-        col: item.get(col.lower(), '')
+        col: item.get(col, '')  # Match exact case from profile requirements
         for col in profile['csv_columns']
     } for item in metadata])
     

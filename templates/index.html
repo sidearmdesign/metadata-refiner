@@ -17,7 +17,6 @@
             50% { background-color: #e9ecef; border-color: #0b5ed7; }
             100% { background-color: #f8f9fa; border-color: #0d6efd; }
         }
-
         .image-card.processing {
             animation: breathing 2s ease-in-out infinite;
             background-color: #f8f9fa;
@@ -45,10 +44,7 @@
         
         <div class="mb-4">
             <label class="form-label">Output Profile:</label>
-            <select id="profile-select" class="form-select">
-                <option value="zedge">Zedge</option>
-                <option value="adobe_stock">Adobe Stock</option>
-            </select>
+            <select id="profile-select" class="form-select"></select>
         </div>
         
         <div id="drop-zone" class="mb-4">
@@ -68,87 +64,97 @@
 
     <script>
         const socket = io();
+        let currentProfile = null;
+        let profilesConfig = {};
+
+        // Helper functions
+        function generateCategoryOptions(categories, selectedValue) {
+            return categories.map(cat => 
+                `<option value="${cat}" ${cat === selectedValue ? 'selected' : ''}>${cat}</option>`
+            ).join('');
+        }
+
+        function createMetadataFields(profile, imageData = {}) {
+            return profile.required_fields.map(field => {
+                const value = imageData[field] || '';
+                if (field === 'category') {
+                    return `
+                        <div class="mb-3">
+                            <label>Category</label>
+                            <select class="form-select category-input">
+                                ${generateCategoryOptions(profile.categories, value)}
+                            </select>
+                        </div>`;
+                }
+                return `
+                    <div class="mb-3">
+                        <label>${field.charAt(0).toUpperCase() + field.slice(1)}</label>
+                        ${field === 'description' ? 
+                            `<textarea class="form-control ${field}-input">${value}</textarea>` :
+                            `<input type="text" class="form-control ${field}-input" value="${value}">`}
+                    </div>`;
+            }).join('');
+        }
+
+        function updateAllCards() {
+            document.querySelectorAll('.image-card').forEach(card => {
+                const imagePath = card.dataset.imagePath;
+                const existingData = Array.from(card.querySelectorAll('input, select, textarea')).reduce((acc, el) => {
+                    acc[el.className.replace('-input', '')] = el.value;
+                    return acc;
+                }, {});
+
+                card.querySelector('.metadata-fields').innerHTML = 
+                    createMetadataFields(currentProfile, existingData);
+            });
+        }
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', async () => {
+            const response = await fetch('/api/profiles');
+            const data = await response.json();
+            profilesConfig = data.profiles;
+            
+            const profileSelect = document.getElementById('profile-select');
+            profileSelect.innerHTML = Object.entries(profilesConfig).map(([id, profile]) =>
+                `<option value="${id}">${profile.name}</option>`
+            ).join('');
+            
+            profileSelect.value = data.default_profile;
+            currentProfile = profilesConfig[data.default_profile];
+            
+            profileSelect.addEventListener('change', () => {
+                currentProfile = profilesConfig[profileSelect.value];
+                updateAllCards();
+            });
+        });
+
+        // File handling
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
 
-        // Drag & drop handlers
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('dragover');
         });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.classList.remove('dragover');
             handleFiles(e.dataTransfer.files);
         });
-
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
-        // Socket.io handlers and progress tracking
-        let processingCount = 0;
-        
-        function updateProgress() {
-            const btn = document.getElementById('generate-all');
-            if (processingCount > 0) {
-                btn.textContent = `Processing (${processingCount} remaining)`;
-                btn.disabled = true;
-            } else {
-                btn.textContent = 'Generate All Metadata';
-                btn.disabled = false;
-            }
-        }
-
-        socket.on('processing_start', (data) => {
-            const card = document.querySelector(`[data-image-path="${data.image}"]`);
-            if (card) {
-                processingCount++;
-                updateProgress();
-                card.classList.add('processing');
-                card.classList.remove('complete');
-            }
-        });
-
-        socket.on('metadata_update', (data) => {
-            const card = document.querySelector(`[data-image-path="${data.image}"]`);
-            if (card) {
-                processingCount--;
-                updateProgress();
-                card.querySelector('.title-input').value = data.metadata.title;
-                card.querySelector('.description-input').value = data.metadata.description;
-                card.querySelector('.tags-input').value = data.metadata.tags;
-                card.querySelector('.category-input').value = data.metadata.category;
-                card.classList.add('complete');
-                card.classList.remove('processing');
-            }
-        });
-
-        socket.on('error', (data) => {
-            processingCount--;
-            updateProgress();
-            const card = document.querySelector(`[data-image-path="${data.image}"]`);
-            if (card) {
-                card.classList.remove('processing');
-            }
-            alert(`Error processing ${data.image}: ${data.message}`);
-        });
 
         async function handleFiles(files) {
             const formData = new FormData();
             Array.from(files).forEach(file => formData.append('images', file));
 
             try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
+                const response = await fetch('/upload', {method: 'POST', body: formData});
                 const { images } = await response.json();
-                images.forEach(createImageCard);
+                // Clear existing cards and filter duplicates
+                const existingPaths = new Set(Array.from(document.querySelectorAll('.image-card')).map(card => card.dataset.imagePath));
+                images.filter(img => !existingPaths.has(img.full_path)).forEach(createImageCard);
                 document.getElementById('generate-all').disabled = false;
                 document.getElementById('export').disabled = false;
             } catch (error) {
@@ -163,80 +169,15 @@
                 <div class="image-card" data-image-path="${image.full_path}">
                     <img src="${image.full_path}" class="img-thumbnail" style="max-height: 200px;">
                     <div class="metadata-fields">
-                        <div class="mb-3">
-                            <label>Title</label>
-                            <input type="text" class="form-control title-input" value="${image.title}">
-                        </div>
-                        ${document.getElementById('profile-select').value === 'zedge' ? `
-                        <div class="mb-3 description-field">
-                            <label>Description</label>
-                            <textarea class="form-control description-input">${image.description}</textarea>
-                        </div>` : ''}
-                        <div class="mb-3">
-                            <label>Tags</label>
-                            <input type="text" class="form-control tags-input" value="${image.tags}">
-                        </div>
-                        <div class="mb-3">
-                            <label>Category</label>
-                            <select class="form-select category-input">
-                                ${document.getElementById('profile-select').value === 'zedge' ? 
-                                    `<option value="Animals">Animals</option>
-                                    <option value="Anime">Anime</option>
-                                    <option value="Cars & Vehicles">Cars & Vehicles</option>
-                                    <option value="Comics">Comics</option>
-                                    <option value="Designs">Designs</option>
-                                    <option value="Drawings">Drawings</option>
-                                    <option value="Entertainment">Entertainment</option>
-                                    <option value="Funny">Funny</option>
-                                    <option value="Games">Games</option>
-                                    <option value="Holidays">Holidays</option>
-                                    <option value="Love">Love</option>
-                                    <option value="Music">Music</option>
-                                    <option value="Nature">Nature</option>
-                                    <option value="Other">Other</option>
-                                    <option value="Patterns">Patterns</option>
-                                    <option value="People">People</option>
-                                    <option value="Sayings">Sayings</option>
-                                    <option value="Space">Space</option>
-                                    <option value="Spiritual">Spiritual</option>
-                                    <option value="Sports">Sports</option>
-                                    <option value="Technology">Technology</option>` : 
-                                    `<option value="Animals">Animals</option>
-                                    <option value="Architecture">Architecture</option>
-                                    <option value="Art">Art</option>
-                                    <option value="Backgrounds">Backgrounds</option>
-                                    <option value="Beauty">Beauty</option>
-                                    <option value="Business">Business</option>
-                                    <option value="Education">Education</option>
-                                    <option value="Fashion">Fashion</option>
-                                    <option value="Food">Food</option>
-                                    <option value="Health">Health</option>
-                                    <option value="Holidays">Holidays</option>
-                                    <option value="Industrial">Industrial</option>
-                                    <option value="Nature">Nature</option>
-                                    <option value="Objects">Objects</option>
-                                    <option value="People">People</option>
-                                    <option value="Religion">Religion</option>
-                                    <option value="Science">Science</option>
-                                    <option value="Sports">Sports</option>
-                                    <option value="Technology">Technology</option>
-                                    <option value="Transportation">Transportation</option>`}
-                            </select>
-                        </div>
+                        ${createMetadataFields(currentProfile, image)}
+                    </div>
+                    <div class="mt-2">
                         <button class="btn btn-sm btn-warning generate-single">Regenerate AI Metadata</button>
                         <button class="btn btn-sm btn-danger delete-btn" style="margin-left: 8px;">X</button>
                     </div>
-                </div>
-            `;
+                </div>`;
 
-            col.querySelector('.delete-btn').addEventListener('click', () => {
-                if (col.querySelector('.image-card').classList.contains('processing')) {
-                    processingCount--;
-                    updateProgress();
-                }
-                col.remove();
-            });
-
+            col.querySelector('.delete-btn').addEventListener('click', () => col.remove());
             col.querySelector('.generate-single').addEventListener('click', () => {
                 socket.emit('generate_metadata', {
                     full_path: image.full_path,
@@ -247,6 +188,48 @@
             document.getElementById('image-grid').appendChild(col);
         }
 
+        // Socket.io handlers
+        let processingCount = 0;
+        
+        function updateProgress() {
+            const btn = document.getElementById('generate-all');
+            btn.textContent = processingCount > 0 
+                ? `Processing (${processingCount} remaining)` 
+                : 'Generate All Metadata';
+            btn.disabled = processingCount > 0;
+        }
+
+        socket.on('processing_start', (data) => {
+            const card = document.querySelector(`[data-image-path="${data.image}"]`);
+            if (card) {
+                processingCount++;
+                updateProgress();
+                card.classList.add('processing');
+                card.classList.remove('complete');
+            }
+        });
+
+        socket.on('metadata_update', (data) => {
+            const card = document.querySelector(`[data-image-path="${data.image}"]`);
+            if (card && currentProfile) {
+                processingCount--;
+                updateProgress();
+                currentProfile.required_fields.forEach(field => {
+                    const input = card.querySelector(`.${field}-input`);
+                    if (input) input.value = data.metadata[field] || '';
+                });
+                card.classList.add('complete');
+                card.classList.remove('processing');
+            }
+        });
+
+        socket.on('error', (data) => {
+            processingCount--;
+            updateProgress();
+            alert(`Error processing ${data.image}: ${data.message}`);
+        });
+
+        // Export handling
         document.getElementById('generate-all').addEventListener('click', () => {
             document.querySelectorAll('.image-card').forEach(card => {
                 socket.emit('generate_metadata', {
@@ -257,18 +240,17 @@
         });
 
         document.getElementById('export').addEventListener('click', async () => {
-            const metadata = Array.from(document.querySelectorAll('.image-card')).map(card => ({
-                full_path: card.dataset.imagePath,
-                title: card.querySelector('.title-input').value,
-                description: card.querySelector('.description-input').value,
-                tags: card.querySelector('.tags-input').value,
-                category: card.querySelector('.category-input').value
-            }));
+            const metadata = Array.from(document.querySelectorAll('.image-card')).map(card => {
+                return currentProfile.required_fields.reduce((acc, field) => {
+                    acc[field] = card.querySelector(`.${field}-input`)?.value || '';
+                    return acc;
+                }, {full_path: card.dataset.imagePath});
+            });
 
             try {
                 const response = await fetch('/export', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         data: metadata,
                         profile: document.getElementById('profile-select').value
@@ -280,72 +262,11 @@
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = 'metadata.csv';
-                document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
+                a.remove();
             } catch (error) {
                 alert('Export failed: ' + error.message);
             }
-        });
-    </script>
-    <script>
-        // Add profile change handler
-        document.getElementById('profile-select').addEventListener('change', () => {
-            // Update all existing cards
-            document.querySelectorAll('.image-card').forEach(card => {
-                // Toggle description field
-                const descField = card.querySelector('.description-field');
-                if (descField) {
-                    descField.style.display = document.getElementById('profile-select').value === 'zedge' 
-                        ? 'block' 
-                        : 'none';
-                }
-
-                // Update category dropdown
-                const categorySelect = card.querySelector('.category-input');
-                categorySelect.innerHTML = document.getElementById('profile-select').value === 'zedge'
-                    ? `<option value="Animals">Animals</option>
-                       <option value="Anime">Anime</option>
-                       <option value="Cars & Vehicles">Cars & Vehicles</option>
-                       <option value="Comics">Comics</option>
-                       <option value="Designs">Designs</option>
-                       <option value="Drawings">Drawings</option>
-                       <option value="Entertainment">Entertainment</option>
-                       <option value="Funny">Funny</option>
-                       <option value="Games">Games</option>
-                       <option value="Holidays">Holidays</option>
-                       <option value="Love">Love</option>
-                       <option value="Music">Music</option>
-                       <option value="Nature">Nature</option>
-                       <option value="Other">Other</option>
-                       <option value="Patterns">Patterns</option>
-                       <option value="People">People</option>
-                       <option value="Sayings">Sayings</option>
-                       <option value="Space">Space</option>
-                       <option value="Spiritual">Spiritual</option>
-                       <option value="Sports">Sports</option>
-                       <option value="Technology">Technology</option>`
-                    : `<option value="Animals">Animals</option>
-                       <option value="Architecture">Architecture</option>
-                       <option value="Art">Art</option>
-                       <option value="Backgrounds">Backgrounds</option>
-                       <option value="Beauty">Beauty</option>
-                       <option value="Business">Business</option>
-                       <option value="Education">Education</option>
-                       <option value="Fashion">Fashion</option>
-                       <option value="Food">Food</option>
-                       <option value="Health">Health</option>
-                       <option value="Holidays">Holidays</option>
-                       <option value="Industrial">Industrial</option>
-                       <option value="Nature">Nature</option>
-                       <option value="Objects">Objects</option>
-                       <option value="People">People</option>
-                       <option value="Religion">Religion</option>
-                       <option value="Science">Science</option>
-                       <option value="Sports">Sports</option>
-                       <option value="Technology">Technology</option>
-                       <option value="Transportation">Transportation</option>`;
-            });
         });
     </script>
 </body>

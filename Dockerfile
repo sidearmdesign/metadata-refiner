@@ -3,7 +3,7 @@ FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-# Copy requirements and install dependencies globally (not with --user)
+# Install dependencies globally to avoid PATH issues
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -12,18 +12,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy application files
-COPY --from=builder /usr/local /usr/local  # Copy globally installed packages
+# Copy global Python packages from the builder stage
+COPY --from=builder /usr/local /usr/local
+
+# Copy application code
 COPY . .
 
-# Ensure scripts in /usr/local/bin are in PATH
-ENV PATH=/usr/local/bin:$PATH
+# Set the PATH to ensure globally installed packages are accessible
+ENV PATH=/usr/local/bin:/usr/local/sbin:$PATH
 
 # Set production environment variables
 ENV FLASK_DEBUG=0
 ENV FLASK_ENV=production
 
-# Create a non-root user and set permissions
+# Create a non-root user and set proper permissions
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 RUN chown -R appuser:appuser /app
 

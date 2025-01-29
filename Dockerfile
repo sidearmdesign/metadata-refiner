@@ -1,7 +1,7 @@
 # Build stage
 FROM python:3.11-slim AS builder
 
-WORKDIR /
+WORKDIR /app
 
 # Copy and install dependencies globally
 COPY requirements.txt .
@@ -11,13 +11,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM python:3.11-slim
 
 # Set the working directory to /app
-WORKDIR /
+WORKDIR /app
 
 # Ensure the non-root user exists before changing permissions
 RUN getent group appuser || groupadd -r appuser && useradd -r -g appuser appuser
 
 # Ensure necessary directories exist for static files and uploads
-RUN mkdir -p /static/images && chown -R appuser:appuser /static && chmod -R 777 /static/images
+RUN mkdir -p /app/static/images && chown -R appuser:appuser /app/static && chmod -R 777 /app/static/images
 
 # Copy installed dependencies from the builder stage
 COPY --from=builder /usr/local /usr/local
@@ -26,7 +26,7 @@ COPY --from=builder /usr/local /usr/local
 COPY . .
 
 # Set ownership of application files to appuser
-RUN chown -R appuser:appuser /
+RUN chown -R appuser:appuser /app
 
 # Set the PATH to include global Python packages
 ENV PATH=/usr/local/bin:/usr/local/sbin:$PATH

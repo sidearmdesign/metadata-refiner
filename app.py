@@ -33,9 +33,7 @@ socketio = SocketIO(app,
                   cors_allowed_origins="*",
                   async_mode='threading',
                   max_http_buffer_size=100 * 1024 * 1024)  # 100MB max for base64 images
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static', 'images')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure directory exists
+app.config['UPLOAD_FOLDER'] = 'static/images/'
 
 @app.route('/')
 def index():

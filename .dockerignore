@@ -27,4 +27,3 @@ __pycache__/
 
 # Application data files
 *.csv
-profiles.json

@@ -10,7 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Runtime stage
 FROM python:3.11-slim
 
-WORKDIR /app
+# Ensure the static/images directory exists
+RUN mkdir -p /static/images
+RUN chown -R appuser:appuser /static
 
 # Copy installed dependencies from the builder stage
 COPY --from=builder /usr/local /usr/local

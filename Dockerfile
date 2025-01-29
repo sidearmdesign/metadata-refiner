@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Runtime stage
 FROM python:3.11-slim
 
+# Ensure the non-root user exists before changing permissions
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 # Ensure the static/images directory exists
 RUN mkdir -p /static/images
 RUN chown -R appuser:appuser /static

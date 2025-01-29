@@ -26,7 +26,7 @@ COPY --from=builder /usr/local /usr/local
 COPY . .
 
 # Set ownership of application files to appuser
-RUN chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /
 
 # Set the PATH to include global Python packages
 ENV PATH=/usr/local/bin:/usr/local/sbin:$PATH

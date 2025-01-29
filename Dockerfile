@@ -7,6 +7,12 @@ WORKDIR /
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Runtime stage
+FROM python:3.11-slim
+
+# Set the working directory to /app
+WORKDIR /
+
 # Ensure the non-root user exists before changing permissions
 RUN getent group appuser || groupadd -r appuser && useradd -r -g appuser appuser
 

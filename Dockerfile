@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN getent group appuser || groupadd -r appuser && useradd -r -g appuser appuser
 
 # Ensure necessary directories exist for static files and uploads
-RUN mkdir -p /static/images && chown -R appuser:appuser /static && chmod -R 777 /app/static/images
+RUN mkdir -p /static/images && chown -R appuser:appuser /static && chmod -R 777 /static/images
 
 # Copy installed dependencies from the builder stage
 COPY --from=builder /usr/local /usr/local

@@ -17,7 +17,7 @@ WORKDIR /app
 RUN getent group appuser || groupadd -r appuser && useradd -r -g appuser appuser
 
 # Ensure necessary directories exist for static files and uploads
-RUN mkdir -p /app/static/images && chown -R appuser:appuser /app/static
+RUN mkdir -p /app/static/images && chown -R appuser:appuser /app/static && chmod -R 777 /app/static/images
 
 # Copy installed dependencies from the builder stage
 COPY --from=builder /usr/local /usr/local

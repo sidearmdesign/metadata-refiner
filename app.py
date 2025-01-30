@@ -110,7 +110,8 @@ def process_image_async(data, sid, profile_name, api_key):
             client = openai.OpenAI(api_key=api_key)
             # Use profile-specific configuration
             system_message = profile['prompt']
-        valid_categories = set(profile['categories'])
+        # Only validate categories if the profile has them defined
+        valid_categories = set(profile.get('categories', []))
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -141,11 +142,13 @@ def process_image_async(data, sid, profile_name, api_key):
         if not all(field in metadata for field in required_fields):
             raise ValueError("Missing required fields in AI response")
             
-        if metadata['category'] not in valid_categories:
-            raise ValueError(
-                f"Invalid category: {metadata['category']}. Must be one of: \n" +
-                "\n".join(f"- {cat}" for cat in sorted(valid_categories))
-            )
+        # Only validate category if the profile has categories defined
+        if valid_categories and 'category' in metadata:
+            if metadata['category'] not in valid_categories:
+                raise ValueError(
+                    f"Invalid category: {metadata['category']}. Must be one of: \n" +
+                    "\n".join(f"- {cat}" for cat in sorted(valid_categories))
+                )
 
         print(f"AI processing completed for {image_path}", flush=True)
         try:

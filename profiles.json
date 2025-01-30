@@ -14,15 +14,9 @@
     },
     "adobe_stock": {
       "name": "Adobe Stock",
-      "prompt": "CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:\n1. CATEGORY MUST BE FROM THIS EXACT LIST:\n   - Animals\n   - Architecture\n   - Art\n   - Backgrounds\n   - Beauty\n   - Business\n   - Education\n   - Fashion\n   - Food\n   - Health\n   - Holidays\n   - Industrial\n   - Nature\n   - Objects\n   - People\n   - Religion\n   - Science\n   - Sports\n   - Technology\n   - Transportation\n\nOTHER RULES:\n\n**TITLE RULES**\n- 40-70 characters\n- No special characters\n- Include main subject first\n\n**TAGS RULES**\n- 7-12 tags\n- Include conceptual and literal terms\n- Proper nouns capitalized\n\n**CATEGORY RULES**\n- Must match exact Adobe Stock categories\n\nRETURN JSON FORMAT:\n{\n  \"title\": \"...\",\n  \"tags\": \"tag1,atg2,...\",\n  \"category\": \"EXACT_CATEGORY_FROM_LIST\"\n}",
-      "required_fields": ["title", "tags", "category"],
-      "categories": [
-        "Animals", "Architecture", "Art", "Backgrounds", "Beauty",
-        "Business", "Education", "Fashion", "Food", "Health",
-        "Holidays", "Industrial", "Nature", "Objects", "People",
-        "Religion", "Science", "Sports", "Technology", "Transportation"
-      ],
-      "csv_columns": ["full_path", "title", "tags", "category"]
+      "prompt": "CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:\n\n**TITLE RULES**\n- 70-90 characters\n- Structure in three parts:\n  1. Describe literally what is seen\n  2. Capture overall concept/theme\n  3. End with exact phrase transparent background\n- NO words: with of from in on at\n- NO punctuation\n\n**KEYWORD RULES**\n- Generate 23-28 single-word keywords separated by commas\n- Order:\n  1. Title keywords first\n  2. Literal keywords describing objects/elements\n  3. Conceptual keywords for theme/style/feeling\n- Do not include transparent background or keywords\n\nRETURN JSON FORMAT:\n{\n  \"title\": \"...\",\n  \"tags\": \"keyword1,keyword2,...\"\n}",
+      "required_fields": ["title", "tags"],
+      "csv_columns": ["full_path", "title", "tags"]
     }
   }
 }

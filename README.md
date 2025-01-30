@@ -6,48 +6,26 @@
 AI-powered image metadata generation tool with profile-based processing and Docker support.
 
 ## Features
-- 🖼️ Automated metadata generation for images using GPT-4
-- ⚙️ Profile-based processing configurations
-- 🐳 Docker containerization for production deployment
+- 🖼️ Automated metadata generation for images using GPT-4o-mini
+- Drag & drop image upload
+- Generate metadata and then edit before export
+- ⚙️ Profiles for different metadata types
+- 🐳 Docker container for deployment
 - 🔌 WebSocket-based real-time processing updates
 - 📁 CSV export with profile-specific column mappings
-- 🔒 Secure session management with cryptographic secrets
 
 ## Installation
 
-### Docker (Production)
+### Docker
 ```bash
-docker build -t metadata-refiner .
-docker run -d -p 5001:5001 \
-  -e OPENAI_API_KEY=your_openai_key \
-  -e SECRET_KEY=your_secret_key \
-  metadata-refiner
-```
-
-### Local Development
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Create .env file with:
-echo "OPENAI_API_KEY=your_openai_key" > .env
-echo "SECRET_KEY=$(python -c 'import secrets; print(secrets.token_hex(20))')" >> .env
-
-# Start development server
-flask run --port 5001
+docker build -t mdr .
+docker run -p 5001:5001 mdr
 ```
 
 ## Configuration
+Open localhost:5001
+Add your OpenAI API key to the Settings (button in the upper right)
 
-### Environment Variables
-```ini
-# Required OpenAI API key - get from https://platform.openai.com
-OPENAI_API_KEY=your_openai_key
-
-# Cryptographic secret for session security
-SECRET_KEY=your_generated_secret
-```
 
 ### Profile Configuration
 Edit `profiles.json` to customize:

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file, g
+from flask import Flask, render_template, request, jsonify, send_file, g, url_for
 import json
 from flask_socketio import SocketIO, emit
 import os
@@ -33,7 +33,8 @@ socketio = SocketIO(app,
                   cors_allowed_origins="*",
                   async_mode='threading',
                   max_http_buffer_size=100 * 1024 * 1024)  # 100MB max for base64 images
-app.config['UPLOAD_FOLDER'] = 'static/images/'
+# Use absolute path for upload folder
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/images/')
 
 @app.route('/')
 def index():
@@ -56,9 +57,13 @@ def upload():
         filename = secure_filename(image.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         image.save(filepath)
-
+        
+        # Use url_for to generate proper URL for the image
+        image_url = url_for('static', filename=f'images/{filename}')
+        
         image_data.append({
-            'full_path': filepath,
+            'full_path': image_url,  # Use URL instead of filesystem path
+            'file_path': filepath,   # Keep internal filesystem path for processing
             'title': '',
             'description': '',
             'tags': '',
@@ -85,12 +90,17 @@ def handle_generate_metadata(data):
 
 def process_image_async(data, sid, profile_name, api_key):
     profile = PROFILES[profile_name]
-    image_path = data['full_path']
+    # Use file_path if available, otherwise reconstruct from full_path
+    image_path = data.get('file_path')
+    if not image_path:
+        # Extract filename from the URL and construct proper path
+        filename = os.path.basename(data['full_path'])
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     
     try:
         with app.app_context():
-            print(f"\nAI processing started for {image_path}", flush=True)
-            socketio.emit('processing_start', {'image': image_path}, room=sid)
+            print(f"\nAI processing started for {data['full_path']}", flush=True)
+            socketio.emit('processing_start', {'image': data['full_path']}, room=sid)
             
             if not api_key:
                 raise ValueError("No API key provided for OpenAI request")
@@ -150,12 +160,12 @@ def process_image_async(data, sid, profile_name, api_key):
                     "\n".join(f"- {cat}" for cat in sorted(valid_categories))
                 )
 
-        print(f"AI processing completed for {image_path}", flush=True)
+        print(f"AI processing completed for {data['full_path']}", flush=True)
         try:
-            print(f"Emitting metadata_update for {image_path} to room {sid}", flush=True)
+            print(f"Emitting metadata_update for {data['full_path']} to room {sid}", flush=True)
             # Profile-specific response formatting
             response_data = {
-                'image': image_path,
+                'image': data['full_path'],
                 'status': 'complete',
                 'metadata': {k: metadata[k] for k in profile['required_fields']}
             }
@@ -166,9 +176,9 @@ def process_image_async(data, sid, profile_name, api_key):
 
     except Exception as e:
         try:
-            print(f"Emitting error for {image_path} to room {sid}", flush=True)
+            print(f"Emitting error for {data['full_path']} to room {sid}", flush=True)
             socketio.emit('error', {
-                'image': image_path,
+                'image': data['full_path'],
                 'message': f"Metadata generation failed: {str(e)}"
             }, room=sid)
             print("Error emission completed", flush=True)

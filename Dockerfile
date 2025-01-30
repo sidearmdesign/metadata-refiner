@@ -41,5 +41,5 @@ USER appuser
 # Expose the application's port
 EXPOSE 5001
 
-# Command to start Gunicorn with desired configuration
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--worker-class", "eventlet", "-w", "1", "app:app"]
+# Command to start Flask development server
+CMD ["python", "app.py"]

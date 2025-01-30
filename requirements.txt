@@ -6,4 +6,3 @@ pillow==10.4.0
 pandas==2.2.1
 python-socketio==5.11.2
 eventlet==0.35.1
-gunicorn==21.2.0

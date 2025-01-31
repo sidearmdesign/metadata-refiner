@@ -37,6 +37,13 @@
             border-color: #0d6efd; 
             background-color: #f8f9fa; 
         }
+        #cost-estimate {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -63,6 +70,12 @@
                 <button id="generate-all" class="btn btn-primary" disabled>Generate All Metadata</button>
                 <button id="export" class="btn btn-success" disabled>Export to CSV</button>
             </div>
+            <div id="cost-estimate" style="display: none;">
+                <h6 class="mb-2">Estimated Cost:</h6>
+                <div>Fresh Generation: <span id="fresh-cost">$0.00</span></div>
+                <div>With Cache: <span id="cached-cost">$0.00</span></div>
+                <small class="text-muted">Based on $0.15/$0.60 per million tokens (fresh) or $0.075/$0.60 per million tokens (cached)</small>
+            </div>
         </div>
     </div>
 
@@ -80,29 +93,44 @@
                                placeholder="sk-...">
                         <div class="form-text">Key is stored in browser localStorage</div>
                     </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="show-cost-estimate" checked>
+                            <label class="form-check-label" for="show-cost-estimate">Show Cost Estimates</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveApiKey()">Save</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()">Save</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // API Key handling
+        // Settings handling
         function showSettings() {
             const modal = new bootstrap.Modal('#settings-modal');
             document.getElementById('api-key').value = localStorage.getItem('openai-key') || '';
+            document.getElementById('show-cost-estimate').checked = localStorage.getItem('show-cost-estimate') !== 'false';
             modal.show();
         }
 
-        function saveApiKey() {
+        function saveSettings() {
             const key = document.getElementById('api-key').value.trim();
+            const showCostEstimate = document.getElementById('show-cost-estimate').checked;
+            
             if (key) {
                 localStorage.setItem('openai-key', key);
-                bootstrap.Modal.getInstance('#settings-modal').hide();
             }
+            localStorage.setItem('show-cost-estimate', showCostEstimate);
+            
+            document.getElementById('cost-estimate').style.display = 
+                showCostEstimate ? 'block' : 'none';
+            
+            bootstrap.Modal.getInstance('#settings-modal').hide();
+            updateCostEstimate();
         }
 
         function checkApiKey() {
@@ -112,6 +140,41 @@
                 alert('Please save your API key in Settings first');
             }
             return hasKey;
+        }
+
+        // Cost estimation
+        function updateCostEstimate() {
+            const imageCount = document.querySelectorAll('.image-card').length;
+            if (imageCount === 0) {
+                document.getElementById('fresh-cost').textContent = '$0.00';
+                document.getElementById('cached-cost').textContent = '$0.00';
+                return;
+            }
+
+            // Estimate tokens per image
+            const inputTokensPerImage = 25000; // system prompt + base64 image
+            const outputTokensPerImage = 100; // JSON response
+
+            // Calculate costs
+            const inputCostPerMillion = 0.15; // $0.15 per million tokens
+            const cachedCostPerMillion = 0.075; // $0.075 per million tokens
+            const outputCostPerMillion = 0.60; // $0.60 per million tokens
+
+            const totalInputTokens = inputTokensPerImage * imageCount;
+            const totalOutputTokens = outputTokensPerImage * imageCount;
+
+            const freshCost = 
+                (totalInputTokens / 1000000 * inputCostPerMillion) +
+                (totalOutputTokens / 1000000 * outputCostPerMillion);
+            
+            const cachedCost = 
+                (totalInputTokens / 1000000 * cachedCostPerMillion) +
+                (totalOutputTokens / 1000000 * outputCostPerMillion);
+
+            document.getElementById('fresh-cost').textContent = 
+                `$${freshCost.toFixed(4)}`;
+            document.getElementById('cached-cost').textContent = 
+                `$${cachedCost.toFixed(4)}`;
         }
 
         // Add event listener for settings button
@@ -189,6 +252,11 @@
                 currentProfile = profilesConfig[profileSelect.value];
                 updateAllCards();
             });
+
+            // Initialize cost estimate display
+            const showCostEstimate = localStorage.getItem('show-cost-estimate') !== 'false';
+            document.getElementById('cost-estimate').style.display = 
+                showCostEstimate ? 'block' : 'none';
         });
 
         // File handling
@@ -219,6 +287,7 @@
                 images.filter(img => !existingPaths.has(img.full_path)).forEach(createImageCard);
                 document.getElementById('generate-all').disabled = false;
                 document.getElementById('export').disabled = false;
+                updateCostEstimate();
             } catch (error) {
                 alert('Upload failed: ' + error.message);
             }
@@ -239,7 +308,10 @@
                     </div>
                 </div>`;
 
-            col.querySelector('.delete-btn').addEventListener('click', () => col.remove());
+            col.querySelector('.delete-btn').addEventListener('click', () => {
+                col.remove();
+                updateCostEstimate();
+            });
             col.querySelector('.generate-single').addEventListener('click', () => {
                 if (!checkApiKey()) return;
                 socket.emit('generate_metadata', {

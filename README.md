@@ -19,7 +19,7 @@ AI-powered image metadata generation tool with profile-based processing and Dock
 ### Docker
 ```bash
 docker build -t mdr .
-docker run -p 5001:5001 mdr
+docker run -p 5001:5001 --name=metadata-refiner mdr
 ```
 
 ## Configuration

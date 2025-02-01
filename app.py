@@ -189,13 +189,25 @@ def process_image_async(data, sid, profile_name, api_key):
 def export():
     metadata = request.json.get('data', [])
     profile_name = request.json.get('profile', 'zedge')
+    base_path = request.json.get('base_path', '').strip()
     profile = PROFILES[profile_name]
     
-    # Map data to profile-specific CSV columns
-    df = pd.DataFrame([{
-        col: item.get(col, '')  # Match exact case from profile requirements
-        for col in profile['csv_columns']
-    } for item in metadata])
+    # Process metadata with optional base path
+    processed_metadata = []
+    for item in metadata:
+        processed_item = {}
+        for col in profile['csv_columns']:
+            value = item.get(col, '')
+            # If this is the full_path column and we have a base path, prepend it
+            if col == 'full_path' and base_path:
+                # Convert /static/images/file.jpg to base_path/file.jpg
+                filename = os.path.basename(value)
+                value = os.path.join(base_path, filename)
+            processed_item[col] = value
+        processed_metadata.append(processed_item)
+    
+    # Create DataFrame with processed metadata
+    df = pd.DataFrame(processed_metadata)
     
     csv_path = f'metadata_{profile_name}.csv'
     df.to_csv(csv_path, index=False)

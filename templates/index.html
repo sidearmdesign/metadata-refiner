@@ -127,6 +127,12 @@
                         <div class="form-text">Key is stored in browser localStorage</div>
                     </div>
                     <div class="mb-3">
+                        <label for="base-path" class="form-label">Base Path for CSV Export</label>
+                        <input type="text" class="form-control" id="base-path" 
+                               placeholder="e.g., C:/Users/MyName/Pictures">
+                        <div class="form-text">If provided, this path will be prepended to image paths in CSV exports</div>
+                    </div>
+                    <div class="mb-3">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="show-cost-estimate" checked>
                             <label class="form-check-label" for="show-cost-estimate">Show Cost Estimates</label>
@@ -146,6 +152,7 @@
         function showSettings() {
             const modal = new bootstrap.Modal('#settings-modal');
             document.getElementById('api-key').value = localStorage.getItem('openai-key') || '';
+            document.getElementById('base-path').value = localStorage.getItem('base-path') || '';
             document.getElementById('show-cost-estimate').checked = localStorage.getItem('show-cost-estimate') !== 'false';
             modal.show();
         }
@@ -153,11 +160,13 @@
         function saveSettings() {
             const key = document.getElementById('api-key').value.trim();
             const showCostEstimate = document.getElementById('show-cost-estimate').checked;
+            const basePath = document.getElementById('base-path').value.trim();
             
             if (key) {
                 localStorage.setItem('openai-key', key);
             }
             localStorage.setItem('show-cost-estimate', showCostEstimate);
+            localStorage.setItem('base-path', basePath);
             
             document.getElementById('cost-estimate').style.display = 
                 showCostEstimate ? 'block' : 'none';
@@ -427,7 +436,8 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         data: metadata,
-                        profile: document.getElementById('profile-select').value
+                        profile: document.getElementById('profile-select').value,
+                        base_path: localStorage.getItem('base-path') || ''
                     })
                 });
                 

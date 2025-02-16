@@ -16,7 +16,41 @@ AI-powered image metadata generation tool with profile-based processing and Dock
 
 ## Installation
 
-### Docker
+To install and run the MetaData Refiner, follow these steps:
+
+### 1. Open a Terminal or Command Prompt
+
+*   **Windows:**
+    *   Press the Windows key, type `cmd` or `powershell`, and press Enter to open Command Prompt or PowerShell.
+*   **macOS:**
+    *   Open Finder, go to `Applications` -> `Utilities`, and double-click `Terminal`.
+*   **Linux:**
+    *   Press `Ctrl+Alt+T` or search for "terminal" in your applications.
+
+### 2. Clone the GitHub Repository
+
+First, you need to install Git if you don't have it already. You can download it from [https://git-scm.com/downloads](https://git-scm.com/downloads).
+
+Once Git is installed, clone the repository using the following command:
+
+```bash
+git clone https://github.com/sidearmdesign/metadata-refiner.git
+cd metadata-refiner
+```
+
+### 3. Install Docker
+
+This project uses Docker for easy deployment. Follow the instructions for your operating system:
+
+*   **Windows:**
+    *   Download and install Docker Desktop from [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/).
+*   **macOS:**
+    *   Download and install Docker Desktop from [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/).
+*   **Linux:**
+    *   Follow the instructions for your distribution from [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/).
+
+### 4. Build and Run the Docker Container
+
 ```bash
 docker build -t mdr .
 docker run -p 5001:5001 --name=metadata-refiner mdr

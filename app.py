@@ -155,10 +155,8 @@ def process_image_async(data, sid, profile_name, api_key):
         # Only validate category if the profile has categories defined
         if valid_categories and 'category' in metadata:
             if metadata['category'] not in valid_categories:
-                raise ValueError(
-                    f"Invalid category: {metadata['category']}. Must be one of: \n" +
-                    "\n".join(f"- {cat}" for cat in sorted(valid_categories))
-                )
+                # Instead of raising an error, set category to "Other"
+                metadata['category'] = "Other"
 
         print(f"AI processing completed for {data['full_path']}", flush=True)
         try:

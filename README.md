@@ -6,7 +6,7 @@
 AI-powered image metadata generation tool with profile-based processing and Docker support.
 
 ## Features
-- 🖼️ Automated metadata generation for images using GPT-4o-mini
+- 🖼️ Automated metadata generation for images using GPT-5-nano
 - Drag & drop image upload
 - Generate metadata and then edit before export
 - ⚙️ Profiles for different metadata types

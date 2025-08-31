@@ -107,7 +107,7 @@
                 <h6 class="mb-2">Estimated Cost:</h6>
                 <div>Fresh Generation: <span id="fresh-cost">$0.00</span></div>
                 <div>With Cache: <span id="cached-cost">$0.00</span></div>
-                <small class="text-muted">Based on $0.15/$0.60 per million tokens (fresh) or $0.075/$0.60 per million tokens (cached)</small>
+                <small class="text-muted">Based on $0.05/$0.40 per million tokens (fresh) or $0.005/$0.40 per million tokens (cached with GPT-5-nano)</small>
             </div>
         </div>
     </div>
@@ -197,10 +197,10 @@
             const inputTokensPerImage = 25000; // system prompt + base64 image
             const outputTokensPerImage = 100; // JSON response
 
-            // Calculate costs
-            const inputCostPerMillion = 0.15; // $0.15 per million tokens
-            const cachedCostPerMillion = 0.075; // $0.075 per million tokens
-            const outputCostPerMillion = 0.60; // $0.60 per million tokens
+            // Calculate costs for GPT-5-nano
+            const inputCostPerMillion = 0.05; // $0.05 per million tokens
+            const cachedCostPerMillion = 0.005; // $0.005 per million tokens (90% discount)
+            const outputCostPerMillion = 0.40; // $0.40 per million tokens
 
             const totalInputTokens = inputTokensPerImage * imageCount;
             const totalOutputTokens = outputTokensPerImage * imageCount;
@@ -318,15 +318,51 @@
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
         async function handleFiles(files) {
+            // Validate files before upload
+            const validFiles = [];
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            const errors = [];
+
+            Array.from(files).forEach(file => {
+                if (!allowedTypes.includes(file.type)) {
+                    errors.push(`${file.name}: Unsupported file type. Please use JPG, PNG, GIF, BMP, or WebP.`);
+                    return;
+                }
+                if (file.size > maxSize) {
+                    errors.push(`${file.name}: File too large. Maximum size is 10MB.`);
+                    return;
+                }
+                if (file.size === 0) {
+                    errors.push(`${file.name}: Empty file.`);
+                    return;
+                }
+                validFiles.push(file);
+            });
+
+            if (errors.length > 0) {
+                alert('Some files were rejected:\\n\\n' + errors.join('\\n'));
+            }
+
+            if (validFiles.length === 0) {
+                alert('No valid files to upload.');
+                return;
+            }
+
             const formData = new FormData();
-            Array.from(files).forEach(file => formData.append('images', file));
+            validFiles.forEach(file => formData.append('images', file));
 
             try {
                 const response = await fetch('/upload', {method: 'POST', body: formData});
-                const { images } = await response.json();
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+
                 // Clear existing cards and filter duplicates
                 const existingPaths = new Set(Array.from(document.querySelectorAll('.image-card')).map(card => card.dataset.imagePath));
-                images.filter(img => !existingPaths.has(img.full_path)).forEach(createImageCard);
+                data.images.filter(img => !existingPaths.has(img.full_path)).forEach(createImageCard);
                 document.getElementById('generate-all').disabled = false;
                 document.getElementById('export').disabled = false;
                 updateCostEstimate();

@@ -57,8 +57,20 @@ docker run -p 5001:5001 --name=metadata-refiner mdr
 ```
 
 ## Configuration
-Open localhost:5001
-Add your OpenAI API key to the Settings (button in the upper right)
+
+### API Key Setup
+You can provide your OpenAI API key in two ways:
+
+1. **Environment Variable (Recommended)**: Create a `.env` file in the project root:
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your API key:
+   OPENAI_API_KEY=sk-your-openai-api-key-here
+   ```
+
+2. **Settings UI**: Open localhost:5001 and click the Settings button in the upper right to enter your API key.
+
+The app will check for the API key in the `.env` file first, then fall back to the Settings UI if not found.
 
 
 ### Profile Configuration

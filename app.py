@@ -95,9 +95,9 @@ def upload():
                     os.remove(filepath)
                 continue
         
-        # Use url_for to generate proper URL for the image
-        image_url = url_for('static', filename=f'images/{filename}')
-        
+            # Use url_for to generate proper URL for the image
+            image_url = url_for('static', filename=f'images/{filename}')
+            
             image_data.append({
                 'full_path': image_url,  # Use URL instead of filesystem path
                 'file_path': filepath,   # Keep internal filesystem path for processing
@@ -120,12 +120,15 @@ processing_executor = ThreadPoolExecutor(max_workers=4)
 
 @socketio.on('generate_metadata')
 def handle_generate_metadata(data):
-    # Get API key from request context before spawning thread
-    # Check both settings modal and environment variables
-    # Get API key from nested settings object
-    api_key = data.get('settings', {}).get('apiKey')
+    # Check for API key in this order:
+    # 1. Environment variable (.env file)
+    # 2. Settings passed from frontend (localStorage)
+    api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
-        emit('error', {'image': data['full_path'], 'message': 'No API key provided'})
+        api_key = data.get('settings', {}).get('apiKey')
+    
+    if not api_key:
+        emit('error', {'image': data['full_path'], 'message': 'No API key provided. Please set OPENAI_API_KEY in .env file or provide it in Settings.'})
         return
     
     # Submit to thread pool with explicit API key

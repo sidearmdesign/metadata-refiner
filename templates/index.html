@@ -124,7 +124,7 @@
                         <label for="api-key" class="form-label">OpenAI API Key</label>
                         <input type="password" class="form-control" id="api-key" 
                                placeholder="sk-...">
-                        <div class="form-text">Key is stored in browser localStorage</div>
+                        <div class="form-text">Key is stored in browser localStorage. Alternatively, set OPENAI_API_KEY in your .env file.</div>
                     </div>
                     <div class="mb-3">
                         <label for="base-path" class="form-label">Base Path for CSV Export</label>
@@ -176,12 +176,12 @@
         }
 
         function checkApiKey() {
-            const hasKey = !!localStorage.getItem('openai-key');
-            if (!hasKey) {
-                showSettings();
-                alert('Please save your API key in Settings first');
-            }
-            return hasKey;
+            // Allow processing to proceed - the server will check .env first,
+            // then fall back to localStorage if needed
+            const hasLocalKey = !!localStorage.getItem('openai-key');
+            // Note: We can't check server-side .env from frontend, so we'll let
+            // the server handle the API key resolution and show error if needed
+            return true; // Always return true, let server handle the validation
         }
 
         // Cost estimation

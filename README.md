@@ -2,93 +2,229 @@
 
 ![Flask](https://img.shields.io/badge/Flask-2.3.2-blue)
 ![OpenAI](https://img.shields.io/badge/OpenAI_API-1.0-green)
+![Electron](https://img.shields.io/badge/Electron-28.0-purple)
+![Cross-Platform](https://img.shields.io/badge/Platform-Windows%20|%20macOS%20|%20Linux-brightgreen)
 
-AI-powered image metadata generation tool with profile-based processing and Docker support.
+AI-powered image metadata generation tool available as both a **cross-platform desktop app** and web application with Docker support.
 
-## Features
-- 🖼️ Automated metadata generation for images using GPT-5-nano
-- Drag & drop image upload
-- Generate metadata and then edit before export
-- ⚙️ Profiles for different metadata types
-- 🐳 Docker container for deployment
-- 🔌 WebSocket-based real-time processing updates
-- 📁 CSV export with profile-specific column mappings
+## 🚀 Features
+- 🖼️ **AI-powered metadata generation** using GPT-5-nano
+- 🖥️ **Cross-platform desktop app** (Windows, macOS, Linux)
+- 🌐 **Web interface** with Docker deployment
+- 📂 **Native file dialogs** and drag & drop support
+- 🔔 **System notifications** for processing completion
+- ⚙️ **Multiple output profiles** (Zedge, Adobe Stock)
+- 🔌 **Real-time processing updates** via WebSocket
+- 📊 **CSV export** with profile-specific formatting
+- 🔧 **Auto-updater ready** for desktop releases
 
-## Installation
+## 📥 Installation Options
 
-To install and run the MetaData Refiner, follow these steps:
+Choose your preferred installation method:
 
-### 1. Open a Terminal or Command Prompt
+## Option 1: 🖥️ Desktop App (Recommended for Personal Use)
 
-*   **Windows:**
-    *   Press the Windows key, type `cmd` or `powershell`, and press Enter to open Command Prompt or PowerShell.
-*   **macOS:**
-    *   Open Finder, go to `Applications` -> `Utilities`, and double-click `Terminal`.
-*   **Linux:**
-    *   Press `Ctrl+Alt+T` or search for "terminal" in your applications.
+**Perfect for**: Personal productivity, client work, offline usage
 
-### 2. Clone the GitHub Repository
+### Prerequisites
+- **Node.js** (v16+): Download from [nodejs.org](https://nodejs.org/)
+- **Python 3** (for AI processing backend)
 
-First, you need to install Git if you don't have it already. You can download it from [https://git-scm.com/downloads](https://git-scm.com/downloads).
-
-Once Git is installed, clone the repository using the following command:
-
-```bash
-git clone https://github.com/sidearmdesign/metadata-refiner.git
-cd metadata-refiner
-```
-
-### 3. Install Docker
-
-This project uses Docker for easy deployment. Follow the instructions for your operating system:
-
-*   **Windows:**
-    *   Download and install Docker Desktop from [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/).
-*   **macOS:**
-    *   Download and install Docker Desktop from [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/).
-*   **Linux:**
-    *   Follow the instructions for your distribution from [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/).
-
-### 4. Build and Run the Docker Container
-
-```bash
-docker build -t mdr .
-docker run -p 5001:5001 --name=metadata-refiner mdr
-```
-
-## Configuration
-
-### API Key Setup
-You can provide your OpenAI API key in two ways:
-
-1. **Environment Variable (Recommended)**: Create a `.env` file in the project root:
+### Quick Start
+1. **Clone the repository:**
    ```bash
-   cp .env.example .env
-   # Edit .env and add your API key:
-   OPENAI_API_KEY=sk-your-openai-api-key-here
+   git clone https://github.com/sidearmdesign/metadata-refiner.git
+   cd metadata-refiner
    ```
 
-2. **Settings UI**: Open localhost:5001 and click the Settings button in the upper right to enter your API key.
+2. **Install dependencies:**
+   ```bash
+   npm install                    # Desktop app dependencies
+   pip install -r requirements.txt  # Python AI backend
+   ```
 
-The app will check for the API key in the `.env` file first, then fall back to the Settings UI if not found.
+3. **Launch desktop app:**
+   ```bash
+   npm start
+   ```
+   The app will open automatically with native desktop features!
 
+### Building for Distribution
+```bash
+npm run build-all    # Build for Windows, macOS, Linux
+npm run build-mac    # macOS only (.dmg)
+npm run build-win    # Windows only (.exe)
+npm run build-linux  # Linux only (.AppImage, .deb)
+```
+
+---
+
+## Option 2: 🐳 Docker (Recommended for Server Deployment)
+
+**Perfect for**: Team sharing, server deployment, web access
+
+### Prerequisites
+- **Docker Desktop**: Download from [docker.com](https://www.docker.com/products/docker-desktop/)
+
+### Quick Start
+1. **Clone and build:**
+   ```bash
+   git clone https://github.com/sidearmdesign/metadata-refiner.git
+   cd metadata-refiner
+   docker build -t mdr .
+   ```
+
+2. **Run container:**
+   ```bash
+   docker run -p 5001:5001 --name=metadata-refiner mdr
+   ```
+
+3. **Access:** Open http://localhost:5001 in your browser
+
+---
+
+## Option 3: 🐍 Direct Python (Development)
+
+**Perfect for**: Development, customization, debugging
+
+### Quick Start
+1. **Clone and install:**
+   ```bash
+   git clone https://github.com/sidearmdesign/metadata-refiner.git
+   cd metadata-refiner
+   pip install -r requirements.txt
+   ```
+
+2. **Run Flask app:**
+   ```bash
+   python app.py
+   ```
+
+3. **Access:** Open http://localhost:5001 in your browser
+
+---
+
+## ⚙️ Configuration
+
+### API Key Setup
+**Required**: You need an OpenAI API key to use the AI metadata generation.
+
+**Method 1: Environment Variable (Recommended)**
+```bash
+# Create .env file in project root
+OPENAI_API_KEY=sk-your-openai-api-key-here
+SECRET_KEY=your-secret-key-here
+```
+
+**Method 2: Settings UI**
+- **Desktop App**: Click Settings button in the app
+- **Web Version**: Click Settings button at localhost:5001
+
+The app checks for the API key in `.env` first, then falls back to the Settings UI.
 
 ### Profile Configuration
-Edit `profiles.json` to customize:
-- AI processing prompts
-- Required metadata fields
-- Valid categories
-- CSV export columns
+Edit `profiles.json` to customize output formats:
 
-## API Documentation
+**Zedge Profile**: Wallpaper marketplace format
+- Title (30-60 chars), Description (100-150 chars)
+- 10 comma-separated tags, Predefined categories
 
-| Endpoint       | Method | Description                          |
-|----------------|--------|--------------------------------------|
-| /api/profiles  | GET    | Get available processing profiles    |
-| /upload        | POST   | Upload images for processing         |
-| /export        | POST   | Export metadata as CSV               |
+**Adobe Stock Profile**: Stock photography format
+- SEO-optimized title (70-90 chars)
+- 23-28 keyword tags for discoverability
 
-WebSocket Endpoint: `/socket.io`
+**Add Custom Profiles**: Define your own metadata formats
 
-## License
+---
+
+## 🔍 Desktop vs Web Comparison
+
+| Feature | Desktop App | Web/Docker |
+|---------|-------------|------------|
+| **Installation** | Node.js + npm install | Docker only |
+| **User Experience** | Native menus, dialogs, notifications | Browser-based |
+| **File Access** | Direct file system access | Upload required |
+| **Offline Usage** | ✅ Full offline capability | ❌ Requires server |
+| **Multi-user** | ❌ Single user | ✅ Multiple users |
+| **System Integration** | ✅ System tray, shortcuts | ❌ Browser only |
+| **Auto-updates** | ✅ Built-in updater | ❌ Manual update |
+| **Best for** | Personal productivity | Team/server deployment |
+
+---
+
+## 🔧 API Documentation
+
+| Endpoint | Method | Description |
+|----------|---------|-------------|
+| `/api/profiles` | GET | Get available processing profiles |
+| `/upload` | POST | Upload images for processing |
+| `/export` | POST | Export metadata as CSV |
+
+**WebSocket**: `/socket.io` - Real-time processing updates
+
+---
+
+## 🔄 Updating
+
+### Desktop App
+```bash
+git pull                    # Get latest changes
+npm install                 # Update dependencies
+npm start                   # Run updated app
+```
+
+### Docker Version
+```bash
+git pull                    # Get latest changes  
+docker build -t mdr .       # Rebuild container
+docker run -p 5001:5001 --name=metadata-refiner mdr  # Run updated container
+```
+
+### Direct Python
+```bash
+git pull                           # Get latest changes
+pip install -r requirements.txt   # Update Python packages
+python app.py                      # Run updated app
+```
+
+---
+
+## 🐛 Troubleshooting
+
+**Desktop App Issues:**
+- Ensure Node.js v16+ and Python 3 are installed
+- Check that ports 5001+ are available
+- Run `npm install` to update dependencies
+
+**Docker Issues:**
+- Ensure Docker Desktop is running
+- Check port 5001 is not in use
+- Try `docker system prune` to clean up
+
+**API Errors:**
+- Verify OpenAI API key is valid and has credits
+- Check `.env` file format and location
+- Categories not in profile list will auto-set to "Other"
+
+---
+
+## 📄 License
 MIT License - See [LICENSE](LICENSE) for details
+
+---
+
+## 🤝 Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test both desktop and web versions
+5. Submit a pull request
+
+**Development Setup:**
+```bash
+# For desktop development
+npm install && npm run dev
+
+# For web development  
+python app.py
+```

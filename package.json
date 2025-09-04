@@ -1,0 +1,123 @@
+{
+  "name": "metadata-refiner",
+  "version": "1.0.0",
+  "description": "AI-powered image metadata generation tool",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --debug",
+    "build": "electron-builder",
+    "build-all": "npm run build -- --mac --win --linux",
+    "build-mac": "electron-builder --mac",
+    "build-win": "electron-builder --win",
+    "build-linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "metadata",
+    "ai",
+    "image",
+    "electron",
+    "desktop"
+  ],
+  "author": "MetaData Refiner Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.7"
+  },
+  "build": {
+    "appId": "com.metadata-refiner.app",
+    "productName": "MetaData Refiner",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "app.py",
+      "requirements.txt",
+      "profiles.json",
+      "templates/**/*",
+      "static/**/*",
+      "!static/images/**/*",
+      "!**/*.pyc",
+      "!**/__pycache__/**/*",
+      "!.git/**/*",
+      "!.gitignore",
+      "!README.md",
+      "!install.md",
+      "!Dockerfile",
+      "!.dockerignore",
+      "!dist/**/*",
+      "!node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": ".",
+        "to": "app",
+        "filter": [
+          "app.py",
+          "requirements.txt",
+          "profiles.json",
+          "templates/**/*",
+          "static/**/*",
+          "!static/images/**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "bundleVersion": "1.0.0"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "category": "Graphics",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "your-github-username",
+      "repo": "metadata-refiner"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-github-username/metadata-refiner.git"
+  }
+}

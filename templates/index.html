@@ -94,6 +94,9 @@
         <div id="drop-zone" class="mb-4">
             <p>Drag & drop images here or</p>
             <input type="file" id="file-input" multiple accept="image/*" class="form-control">
+            <div class="mt-2">
+                <button id="browse-files" class="btn btn-outline-primary">Browse Files...</button>
+            </div>
         </div>
 
         <div id="image-grid" class="row"></div>
@@ -222,6 +225,9 @@
         // Add event listener for settings button
         document.getElementById('settings-btn').addEventListener('click', showSettings);
 
+        // Detect if running in Electron
+        const isElectron = window.process && window.process.type;
+
         // Add API key to all fetch requests
         const originalFetch = window.fetch;
         window.fetch = function(url, options = {}) {
@@ -231,6 +237,31 @@
         };
 
         const socket = io();
+
+        // Electron-specific functionality
+        if (isElectron) {
+            const { ipcRenderer } = require('electron');
+            
+            // Listen for files selected from menu
+            ipcRenderer.on('files-selected', (event, filePaths) => {
+                // Convert file paths to File objects and handle them
+                Promise.all(filePaths.map(filePath => {
+                    return fetch(`file://${filePath}`)
+                        .then(res => res.blob())
+                        .then(blob => {
+                            const filename = filePath.split(/[\\\/]/).pop();
+                            return new File([blob], filename, { type: blob.type });
+                        });
+                })).then(files => {
+                    handleFiles(files);
+                });
+            });
+            
+            // Show notification when processing completes
+            window.showElectronNotification = function(title, body) {
+                ipcRenderer.send('show-notification', title, body);
+            };
+        }
         let currentProfile = null;
         let profilesConfig = {};
 
@@ -316,6 +347,38 @@
             handleFiles(e.dataTransfer.files);
         });
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        
+        // Browse files button handler
+        document.getElementById('browse-files').addEventListener('click', () => {
+            if (isElectron) {
+                // Use Electron's native file dialog
+                const { ipcRenderer } = require('electron');
+                ipcRenderer.invoke('show-open-dialog', {
+                    properties: ['openFile', 'multiSelections'],
+                    filters: [
+                        { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'] },
+                        { name: 'All Files', extensions: ['*'] }
+                    ]
+                }).then(result => {
+                    if (!result.canceled) {
+                        // Convert file paths to File objects and handle them
+                        Promise.all(result.filePaths.map(filePath => {
+                            return fetch(`file://${filePath}`)
+                                .then(res => res.blob())
+                                .then(blob => {
+                                    const filename = filePath.split(/[\\\/]/).pop();
+                                    return new File([blob], filename, { type: blob.type });
+                                });
+                        })).then(files => {
+                            handleFiles(files);
+                        });
+                    }
+                });
+            } else {
+                // Fallback to regular file input for web version
+                fileInput.click();
+            }
+        });
 
         async function handleFiles(files) {
             // Validate files before upload
@@ -436,6 +499,11 @@
                 });
                 card.classList.add('complete');
                 card.classList.remove('processing');
+                
+                // Show notification when all processing is done
+                if (processingCount === 0 && isElectron && window.showElectronNotification) {
+                    window.showElectronNotification('MetaData Refiner', 'All metadata generation completed!');
+                }
             }
         });
 

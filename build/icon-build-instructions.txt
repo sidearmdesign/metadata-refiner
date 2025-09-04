@@ -1,0 +1,27 @@
+Icon Build Instructions for MetaData Refiner
+=====================================================
+
+To build proper icons for all platforms, you'll need to create the following files:
+
+1. icon.icns (macOS) - 1024x1024 base image
+2. icon.ico (Windows) - Multiple sizes embedded (16, 32, 48, 64, 128, 256)  
+3. icon.png (Linux) - 512x512 PNG
+
+Icon Sources:
+- Base logo: static/resources/mdr-logo.svg
+
+Recommended Tools:
+- Online converter: https://iconverticons.com/
+- macOS: Icon Set Creator (App Store)
+- Cross-platform: GIMP with icon plugins
+
+Instructions:
+1. Convert mdr-logo.svg to 1024x1024 PNG
+2. Use online tools or desktop software to create:
+   - icon.icns for macOS
+   - icon.ico for Windows  
+   - icon.png for Linux
+
+Once you have the proper icons, replace the placeholder files in this build/ directory.
+
+Current placeholder files are basic and should be replaced for production builds.

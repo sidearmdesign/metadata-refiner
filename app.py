@@ -13,7 +13,14 @@ from io import BytesIO
 
 # Load environment variables and profiles
 load_dotenv()
-with open('profiles.json') as f:
+
+# Handle profiles.json path for both development and bundled app
+profiles_path = 'profiles.json'
+if not os.path.exists(profiles_path):
+    # Try alternate path for bundled app
+    profiles_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'profiles.json')
+
+with open(profiles_path) as f:
     PROFILES = json.load(f)['profiles']
 
 def check_api_key(f):
@@ -282,4 +289,12 @@ def export():
     return send_file(csv_path, as_attachment=True)
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5001, debug=True, allow_unsafe_werkzeug=True)
+    # Get port from environment variable or default to 5001
+    port = int(os.getenv('PORT', 5001))
+    debug = os.getenv('FLASK_DEBUG', '1') == '1'
+    
+    # Bind to localhost only for desktop app security
+    host = '127.0.0.1'
+    
+    print(f"Starting MetaData Refiner server on {host}:{port}")
+    socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)

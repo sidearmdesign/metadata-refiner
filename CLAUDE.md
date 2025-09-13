@@ -1,0 +1,1 @@
+- This project has Docker container and Electron implementations that both need to be maintained

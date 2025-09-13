@@ -75,13 +75,64 @@
             background-color: darkblue;
             border-color: darkblue;
         }
+        
+        /* Dark mode styles */
+        [data-bs-theme="dark"] .image-card { 
+            border-color: #495057;
+            background-color: #212529;
+        }
+        [data-bs-theme="dark"] .image-card.processing {
+            background-color: #1a1d29;
+            border-color: #0d6efd;
+        }
+        [data-bs-theme="dark"] .image-card.complete {
+            background-color: #0f2027;
+            border-color: #198754;
+        }
+        [data-bs-theme="dark"] #drop-zone { 
+            border-color: #495057; 
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+        [data-bs-theme="dark"] .dragover { 
+            border-color: #0d6efd; 
+            background-color: #495057; 
+        }
+        [data-bs-theme="dark"] #cost-estimate {
+            border-color: #495057;
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+        .logo-fill {
+            fill: #231f20;
+        }
+        [data-bs-theme="dark"] .logo-fill {
+            fill: #ffffff;
+        }
     </style>
 </head>
 <body>
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 aria-label="MetaData Refiner">
-                <img id="logo" src="/static/resources/mdr-logo.svg" alt="MetaData Refiner" />
+                <svg id="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 387.89 89.6" style="height: 60px; width: auto;">
+                    <path class="logo-fill" d="M21.54,38.83V6.76c0-.48.29-.77.77-.77h8.88c.48,0,.77.24,1.06.72l14.74,24.05h.62l14.74-24.05c.29-.48.58-.72,1.06-.72h8.88c.48,0,.77.29.77.77v32.07c0,.48-.29.77-.77.77h-6.14c-.48,0-.72-.29-.72-.77v-22.61h-.53l-13.83,22.61c-.29.48-.62.77-1.15.77h-5.23c-.53,0-.86-.29-1.15-.77l-13.83-22.61h-.53v22.61c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77Z"/>
+                    <path class="logo-fill" d="M117.5,33.65v5.23c0,.48-.24.72-.72.72h-37.92c-.48,0-.77-.29-.77-.77V6.76c0-.48.29-.77.77-.77h37.68c.48,0,.72.24.72.72v5.23c0,.48-.24.72-.72.72h-30.82v6.77h30.34c.48,0,.72.24.72.72v5.28c0,.48-.24.72-.72.72h-30.34v6.77h31.06c.48,0,.72.24.72.72Z"/>
+                    <path class="logo-fill" d="M163.62,6.76v5.18c0,.48-.29.72-.77.72h-16.75v26.16c0,.48-.29.77-.77.77h-5.95c-.48,0-.77-.29-.77-.77V12.67h-16.75c-.48,0-.77-.24-.77-.72v-5.18c0-.48.29-.77.77-.77h41c.48,0,.77.29.77.77Z"/>
+                    <path class="logo-fill" d="M208.7,39.6h-7.15c-.58,0-.82-.34-1.15-.86l-2.88-4.46h-26.5l-2.88,4.46c-.34.53-.58.86-1.1.86h-7.2c-.48,0-.82-.38-.38-1.01l20.55-31.83c.29-.48.53-.77,1.06-.77h6.43c.53,0,.82.29,1.1.77l20.5,31.83c.43.62.1,1.01-.38,1.01ZM193.33,27.74l-8.74-13.63h-.62l-8.79,13.63h18.15Z"/>
+                    <path class="logo-fill" d="M257.7,14.78v16.03c0,5.47-2.59,8.78-8.54,8.78h-35.33c-.48,0-.77-.29-.77-.77V6.76c0-.48.29-.77.77-.77h35.33c5.95,0,8.54,3.31,8.54,8.78ZM250.12,15.31c0-1.97-.86-2.64-2.64-2.64h-26.79v20.26h26.79c1.78,0,2.64-.67,2.64-2.64v-14.98Z"/>
+                    <path class="logo-fill" d="M309.26,39.6h-7.15c-.58,0-.82-.34-1.15-.86l-2.88-4.46h-26.5l-2.88,4.46c-.34.53-.58.86-1.1.86h-7.2c-.48,0-.82-.38-.38-1.01l20.55-31.83c.29-.48.53-.77,1.06-.77h6.43c.53,0,.82.29,1.1.77l20.5,31.83c.43.62.1,1.01-.38,1.01ZM293.89,27.74l-8.74-13.63h-.62l-8.79,13.63h18.15Z"/>
+                    <path class="logo-fill" d="M345.11,6.76v5.18c0,.48-.29.72-.77.72h-16.75v26.16c0,.48-.29.77-.77.77h-5.95c-.48,0-.77-.29-.77-.77V12.67h-16.75c-.48,0-.77-.24-.77-.72v-5.18c0-.48.29-.77.77-.77h41c.48,0,.77.29.77.77Z"/>
+                    <path class="logo-fill" d="M387.3,39.6h-7.15c-.58,0-.82-.34-1.15-.86l-2.88-4.46h-26.5l-2.88,4.46c-.34.53-.58.86-1.1.86h-7.2c-.48,0-.82-.38-.38-1.01l20.55-31.83c.29-.48.53-.77,1.06-.77h6.43c.53,0,.82.29,1.1.77l20.5,31.83c.43.62.1,1.01-.38,1.01ZM371.94,27.74l-8.74-13.63h-.62l-8.79,13.63h18.15Z"/>
+                    <path class="logo-fill" d="M62.01,83.6h-5.57c-.58,0-.96-.29-1.34-.82l-5.38-7.92h-20.55v7.97c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h31.59c5.95,0,8.54,3.31,8.54,8.78v7.34c0,4.13-1.49,7.01-4.85,8.16l5.33,8.06c.48.67-.1,1.25-.91,1.25ZM29.17,68.19h22.95c1.78,0,2.69-.67,2.69-2.64v-6.24c0-1.97-.91-2.64-2.69-2.64h-22.95v11.52Z"/>
+                    <path class="logo-fill" d="M107.27,77.65v5.23c0,.48-.24.72-.72.72h-37.92c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h37.68c.48,0,.72.24.72.72v5.23c0,.48-.24.72-.72.72h-30.82v6.77h30.34c.48,0,.72.24.72.72v5.28c0,.48-.24.72-.72.72h-30.34v6.77h31.06c.48,0,.72.24.72.72Z"/>
+                    <path class="logo-fill" d="M151,50.72v5.23c0,.48-.24.72-.72.72h-30.82v5.81h30.34c.48,0,.72.24.72.72v5.23c0,.48-.24.72-.72.72h-30.34v13.68c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h37.68c.48,0,.72.24.72.72Z"/>
+                    <path class="logo-fill" d="M156.32,50h6.15c.48,0,.72.29.72.77v32.07c0,.48-.24.77-.72.77h-6.15c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77Z"/>
+                    <path class="logo-fill" d="M168.23,82.83v-32.07c0-.48.29-.77.77-.77h7.15c.43,0,.62.19,1.06.58l25.35,24h.67v-23.81c0-.48.24-.77.72-.77h6.14c.48,0,.77.29.77.77v32.07c0,.48-.29.77-.77.77h-7.15c-.43,0-.62-.19-1.06-.58l-25.35-24h-.67v23.81c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77Z"/>
+                    <path class="logo-fill" d="M255.3,77.65v5.23c0,.48-.24.72-.72.72h-37.92c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h37.68c.48,0,.72.24.72.72v5.23c0,.48-.24.72-.72.72h-30.82v6.77h30.34c.48,0,.72.24.72.72v5.28c0,.48-.24.72-.72.72h-30.34v6.77h31.06c.48,0,.72.24.72.72Z"/>
+                    <path class="logo-fill" d="M300.33,83.6h-5.57c-.58,0-.96-.29-1.34-.82l-5.38-7.92h-20.55v7.97c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h31.59c5.95,0,8.54,3.31,8.54,8.78v7.34c0,4.13-1.49,7.01-4.85,8.16l5.33,8.06c.48.67-.1,1.25-.91,1.25ZM267.49,68.19h22.95c1.78,0,2.69-.67,2.69-2.64v-6.24c0-1.97-.91-2.64-2.69-2.64h-22.95v11.52Z"/>
+                    <rect class="logo-fill" width="9.87" height="89.6"/>
+                </svg>
             </h1>
             <button id="settings-btn" class="btn btn-secondary">Settings</button>
         </div>
@@ -141,6 +192,12 @@
                             <label class="form-check-label" for="show-cost-estimate">Show Cost Estimates</label>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="dark-mode">
+                            <label class="form-check-label" for="dark-mode">Dark Mode</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -151,12 +208,18 @@
     </div>
 
     <script>
+        // Theme management
+        function applyTheme(isDark) {
+            document.body.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+        }
+
         // Settings handling
         function showSettings() {
             const modal = new bootstrap.Modal('#settings-modal');
             document.getElementById('api-key').value = localStorage.getItem('openai-key') || '';
             document.getElementById('base-path').value = localStorage.getItem('base-path') || '';
             document.getElementById('show-cost-estimate').checked = localStorage.getItem('show-cost-estimate') !== 'false';
+            document.getElementById('dark-mode').checked = localStorage.getItem('dark-mode') === 'true';
             modal.show();
         }
 
@@ -164,15 +227,19 @@
             const key = document.getElementById('api-key').value.trim();
             const showCostEstimate = document.getElementById('show-cost-estimate').checked;
             const basePath = document.getElementById('base-path').value.trim();
+            const darkMode = document.getElementById('dark-mode').checked;
             
             if (key) {
                 localStorage.setItem('openai-key', key);
             }
             localStorage.setItem('show-cost-estimate', showCostEstimate);
             localStorage.setItem('base-path', basePath);
+            localStorage.setItem('dark-mode', darkMode);
             
             document.getElementById('cost-estimate').style.display = 
                 showCostEstimate ? 'block' : 'none';
+            
+            applyTheme(darkMode);
             
             bootstrap.Modal.getInstance('#settings-modal').hide();
             updateCostEstimate();
@@ -309,6 +376,10 @@
 
         // Initialization
         document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize theme
+            const darkMode = localStorage.getItem('dark-mode') === 'true';
+            applyTheme(darkMode);
+            
             const response = await fetch('/api/profiles');
             const data = await response.json();
             profilesConfig = data.profiles;

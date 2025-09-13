@@ -10,6 +10,7 @@ import openai
 from dotenv import load_dotenv
 import base64
 from io import BytesIO
+import httpx
 
 # Load environment variables and profiles
 load_dotenv()
@@ -183,8 +184,11 @@ def process_image_async(data, sid, profile_name, api_key):
                 img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
 
         with app.app_context():
-            # Call OpenAI API
-            client = openai.OpenAI(api_key=api_key)
+            # Call OpenAI API using a custom httpx client to avoid httpx>=0.28 proxies incompatibility
+            http_timeout = httpx.Timeout(60.0)
+            # Do not pass deprecated 'proxies' arg; env vars will be respected by httpx automatically
+            http_client = httpx.Client(timeout=http_timeout, follow_redirects=True)
+            client = openai.OpenAI(api_key=api_key, http_client=http_client)
             # Use profile-specific configuration
             system_message = profile['prompt']
         # Only validate categories if the profile has them defined
@@ -259,6 +263,12 @@ def process_image_async(data, sid, profile_name, api_key):
             print("Error emission completed", flush=True)
         except Exception as e:
             print(f"Error emitting error event: {str(e)}", flush=True)
+    finally:
+        try:
+            if 'http_client' in locals():
+                http_client.close()
+        except Exception:
+            pass
 
 @app.route('/export', methods=['POST'])
 def export():

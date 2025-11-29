@@ -9,168 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital@0;1&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --accent: #469DB4;
-            --accent-600: #3f8aa0;
-            --accent-700: #376f80;
-            --panel-bg: rgba(255,255,255,0.9);
-            --panel-border: rgba(0,0,0,0.12);
-            --muted: rgba(0,0,0,0.6);
-        }
-        body {
-            font-family: 'Montserrat', sans-serif;
-            line-height: 1.6;
-            background: radial-gradient(1200px 600px at 10% -10%, rgba(70,157,180,0.12), transparent),
-                        radial-gradient(800px 400px at 90% 0%, rgba(0,0,128,0.08), transparent);
-            min-height: 100vh;
-        }
-        .app-shell { max-width: 1600px; }
-        /* Header */
-        .brand {
-            display: flex; align-items: center; gap: .75rem;
-        }
-        #logo { height: 44px; width: auto; }
-        .logo-fill { fill: #231f20; }
-        /* Dropzone */
-        #drop-zone {
-            border: 1.5px dashed rgba(0,0,0,0.2);
-            background: var(--panel-bg);
-            backdrop-filter: blur(6px);
-            padding: 2.25rem; text-align: center; border-radius: 14px;
-            transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
-        }
-        #drop-zone:hover { transform: translateY(-1px); }
-        .dragover { border-color: var(--accent); background-color: rgba(70,157,180,0.08); }
-        .drop-icon { width: 2rem; height: 2rem; color: var(--accent); margin: 0 auto; }
-        .drop-icon svg { width: 100%; height: 100%; display: block; }
-        .drop-icon path { fill: currentColor; }
-        /* Cards */
-        .image-card {
-            position: relative; border: 1px solid var(--panel-border); border-radius: 12px; overflow: hidden;
-            background: var(--panel-bg); backdrop-filter: blur(6px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            padding: 1rem; margin-bottom: 1.25rem;
-            transition: box-shadow .2s ease, transform .2s ease;
-        }
-        .image-card:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.12); transform: translateY(-2px); }
-        .thumb-wrap { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--panel-border); background: #0f1412; }
-        .thumb { max-height: 200px; width: 100%; object-fit: cover; display: block; }
-        .thumb-wrap::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .18;
-            background: repeating-linear-gradient( to bottom, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.08) 1px, transparent 3px, transparent 6px ); }
-        .status-badge { position: absolute; top: .75rem; left: .75rem; }
-        .delete-btn { position: absolute; top: .5rem; right: .5rem; opacity: .85; }
-        .generate-single { background-color: var(--accent); border-color: var(--accent); color: #fff; }
-        .generate-single:hover { background-color: var(--accent-600); border-color: var(--accent-600); }
-        .image-card.processing { outline: 2px solid var(--accent); }
-        .image-card.complete { outline: 2px solid #198754; }
-        /* Actions bar */
-        .actions-bar {
-            position: sticky; top: .75rem; z-index: 10; border-radius: 14px;
-            background: var(--panel-bg); backdrop-filter: blur(6px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-        }
-        #generate-all { background-color: var(--accent); border-color: var(--accent); }
-        #generate-all:hover { background-color: var(--accent-600); border-color: var(--accent-600); }
-        #export { background-color: darkblue; border-color: darkblue; }
-        /* Cost card */
-        #cost-estimate { border-radius: 12px; }
-
-        /* Layout with sidebar */
-        .app-layout { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
-        .sidebar { position: sticky; top: 10px; height: calc(100vh - 96px); overflow: auto; padding: 8px; border-radius: 14px; background: var(--panel-bg); border: 1px solid var(--panel-border); }
-        .sidebar #drop-zone { margin: 0; }
-        .content { min-height: 400px; }
-
-        @media (max-width: 1100px) {
-            .app-layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; height: auto; }
-        }
-
-        /* Table view: greenbar-inspired rows & separators */
-        .table.greenbar { table-layout: fixed; }
-        .table.greenbar tbody tr:nth-child(even) { background-color: rgba(70,157,180,0.04); }
-        .table.greenbar td + td, .table.greenbar th + th { border-left: 1px solid var(--panel-border); }
-        .table.greenbar thead tr { border-bottom: 1px solid var(--panel-border); }
-        .table.greenbar th, .table.greenbar td { padding: .5rem .6rem; }
-        .filename { display: inline-block; max-width: 420px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .btn-compact { padding: .2rem .35rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
-        .btn-compact svg { width: 14px; height: 14px; }
-
-        /* List view */
-        .list-item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: stretch;
-            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
-        .list-left { display: grid; grid-template-columns: 18px 96px; gap: 8px; align-items: center; }
-        .list-thumb { width: 96px; height: 96px; border-radius: 10px; overflow: hidden; border: 1px solid var(--panel-border); background: #0f1412; }
-        .list-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .list-main { display: grid; grid-template-rows: auto auto; gap: 8px; }
-        .list-file { display: flex; gap: 10px; align-items: baseline; }
-        .list-file .filename { max-width: none; flex: 1; }
-        .list-fields { display: grid; grid-template-columns: 1.2fr 1.4fr 1fr 200px; gap: 8px; }
-        .list-fields .form-control, .list-fields .form-select { height: 38px; }
-        .list-fields textarea.form-control { height: 76px; }
-        .list-right { display: grid; grid-auto-rows: min-content; gap: 6px; justify-items: end; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .status-ready { background: #6c757d; }
-        .status-processing { background: var(--accent); }
-        .status-complete { background: #198754; }
-        .status-error { background: #dc3545; }
-
-        /* Dark mode */
-        body[data-bs-theme="dark"] {
-            /* Dark, Severance-inspired gradient */
-            --panel-bg: rgba(20, 24, 26, 0.85);
-            --panel-border: rgba(255,255,255,0.14);
-            --muted: rgba(255,255,255,0.65);
-            color: #e9ecef;
-            background:
-              radial-gradient(1200px 600px at 10% -10%, rgba(70,157,180,0.10), transparent),
-              radial-gradient(800px 400px at 90% 0%, rgba(0,40,32,0.12), transparent),
-              linear-gradient(180deg, #0c0f10, #0e1213);
-        }
-        [data-bs-theme="dark"] .image-card { background: var(--panel-bg); border-color: var(--panel-border); }
-        [data-bs-theme="dark"] .logo-fill { fill: #fff; }
-        [data-bs-theme="dark"] #drop-zone { border-color: var(--panel-border); background: var(--panel-bg); }
-        [data-bs-theme="dark"] .dragover { background-color: rgba(70,157,180,0.15); }
-        [data-bs-theme="dark"] .actions-bar { background: var(--panel-bg); border-color: var(--panel-border); }
-        [data-bs-theme="dark"] .table.greenbar tbody tr:nth-child(even) { background-color: rgba(70,157,180,0.06); }
-
-        /* Severed Floor styling */
-        body[data-style="severed"] { background: none; }
-        [data-style="severed"] .app-shell { position: relative; }
-        [data-style="severed"] .app-shell::before {
-            content: ""; position: fixed; inset: 0; z-index: -1; opacity: .9;
-            background:
-              linear-gradient(0deg, rgba(32,64,56,0.04), rgba(32,64,56,0.04)),
-              repeating-linear-gradient( to bottom, rgba(32,64,56,0.06) 0, rgba(32,64,56,0.06) 24px, transparent 24px, transparent 48px ),
-              radial-gradient(1200px 600px at 20% 0%, rgba(64,128,112,0.12), transparent ),
-              radial-gradient(800px 400px at 80% -10%, rgba(0,40,32,0.12), transparent );
-        }
-        [data-style="severed"] .actions-bar, [data-style="severed"] #drop-zone, [data-style="severed"] .image-card {
-            border-radius: 8px; border: 1px solid rgba(32,64,56,0.25); background: rgba(248,252,250,0.92);
-        }
-        [data-style="severed"] label, [data-style="severed"] .form-text, [data-style="severed"] .text-muted { font-family: 'IBM Plex Mono', monospace; letter-spacing: .2px; color: var(--muted); }
-        [data-style="severed"] .btn { border-radius: 6px; }
-        [data-style="severed"] .thumb-wrap { background: #0b110f; }
-        [data-style="severed"] .table.greenbar tbody tr:nth-child(even) { background-color: rgba(32,64,56,0.06); }
-
-        /* Dark + Severed */
-        body[data-bs-theme="dark"][data-style="severed"] .app-shell::before {
-            opacity: .75;
-            background:
-              linear-gradient(0deg, rgba(10,18,16,0.5), rgba(10,18,16,0.5)),
-              repeating-linear-gradient( to bottom, rgba(48,96,84,0.12) 0, rgba(48,96,84,0.12) 24px, transparent 24px, transparent 48px ),
-              radial-gradient(1200px 600px at 20% 0%, rgba(32,64,56,0.28), transparent ),
-              radial-gradient(800px 400px at 80% -10%, rgba(10,24,20,0.28), transparent );
-        }
-        body[data-bs-theme="dark"][data-style="severed"] .actions-bar,
-        body[data-bs-theme="dark"][data-style="severed"] #drop-zone,
-        body[data-bs-theme="dark"][data-style="severed"] .image-card {
-            background: rgba(16,20,22,0.85); border-color: rgba(255,255,255,0.12);
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
+    <!-- Toast notification container -->
+    <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+
     <div class="container app-shell py-3">
         <header class="d-flex justify-content-between align-items-center mb-3">
             <div class="brand" aria-label="MetaData Refiner">
@@ -244,6 +88,20 @@
                     <div id="cost-estimate" class="border p-2 px-3" style="display: none; background: var(--panel-bg); border-color: var(--panel-border);">
                         <span class="me-3">Fresh: <strong id="fresh-cost">$0.00</strong></span>
                         <span>Cached: <strong id="cached-cost">$0.00</strong></span>
+                    </div>
+
+                    <!-- Batch Progress Bar -->
+                    <div id="batch-progress" class="border rounded p-3" style="display: none; background: var(--panel-bg); border-color: var(--panel-border);">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong id="progress-current">0</strong> / <span id="progress-total">0</span></span>
+                            <span class="text-muted small" id="progress-eta"></span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" id="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="mt-2 text-end">
+                            <button id="cancel-batch" class="btn btn-sm btn-outline-danger">Cancel</button>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -393,8 +251,8 @@
         // Add event listener for settings button
         document.getElementById('settings-btn').addEventListener('click', showSettings);
 
-        // Detect if running in Electron
-        const isElectron = window.process && window.process.type;
+        // Detect if running in Electron (via preload script)
+        const isElectron = window.electronAPI && window.electronAPI.isElectron;
 
         // Add API key to all fetch requests
         const originalFetch = window.fetch;
@@ -406,12 +264,10 @@
 
         const socket = io();
 
-        // Electron-specific functionality
+        // Electron-specific functionality (uses secure preload bridge)
         if (isElectron) {
-            const { ipcRenderer } = require('electron');
-            
             // Listen for files selected from menu
-            ipcRenderer.on('files-selected', (event, filePaths) => {
+            window.electronAPI.onFilesSelected((filePaths) => {
                 // Convert file paths to File objects and handle them
                 Promise.all(filePaths.map(filePath => {
                     return fetch(`file://${filePath}`)
@@ -424,10 +280,10 @@
                     handleFiles(files);
                 });
             });
-            
+
             // Show notification when processing completes
             window.showElectronNotification = function(title, body) {
-                ipcRenderer.send('show-notification', title, body);
+                window.electronAPI.showNotification(title, body);
             };
         }
         let currentProfile = null;
@@ -439,6 +295,53 @@
         let searchQuery = '';
 
         // Helper functions
+
+        // Toast notification for categorized errors
+        function showToast(data) {
+            const container = document.getElementById('toast-container');
+            const colors = {
+                auth: 'danger',
+                quota: 'warning',
+                timeout: 'info',
+                network: 'info',
+                model: 'secondary',
+                server: 'secondary'
+            };
+            const bgColor = colors[data.category] || 'secondary';
+            const filename = data.image ? data.image.split('/').pop() : 'Unknown';
+
+            const toast = document.createElement('div');
+            toast.className = `toast show border-start border-4 border-${bgColor}`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <strong class="me-auto text-${bgColor}">${data.title || 'Error'}</strong>
+                    <small class="text-muted">${filename}</small>
+                    <button type="button" class="btn-close" onclick="this.closest('.toast').remove()"></button>
+                </div>
+                <div class="toast-body">
+                    <p class="mb-1">${data.message || 'An error occurred'}</p>
+                    ${data.action ? `<p class="small text-muted mb-2">${data.action}</p>` : ''}
+                    ${data.retry_allowed && data.image ? `<button class="btn btn-sm btn-outline-primary" onclick="retryImage('${data.image}'); this.closest('.toast').remove();">Retry</button>` : ''}
+                </div>
+            `;
+            container.appendChild(toast);
+
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+            }, 10000);
+        }
+
+        // Retry a single image
+        function retryImage(imagePath) {
+            const item = getImageByPath(imagePath);
+            if (item) {
+                item.status = 'ready';
+                queueGeneration([imagePath]);
+            }
+        }
+
         function generateCategoryOptions(categories, selectedValue) {
             return categories.map(cat => 
                 `<option value="${cat}" ${cat === selectedValue ? 'selected' : ''}>${cat}</option>`
@@ -499,9 +402,125 @@
             return image.full_path.toLowerCase().includes(q) || fields.includes(q);
         }
 
+        // Lazy loading configuration
+        const BATCH_SIZE = 20;
+        let renderedCount = 0;
+        let scrollObserver = null;
+
+        // Session state persistence
+        const SESSION_KEY = 'mdr-session-state';
+        const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+        function saveSessionState() {
+            const state = {
+                images: imagesState,
+                selectedPaths: Array.from(selectedPaths),
+                profile: document.getElementById('profile-select')?.value || 'zedge',
+                viewMode: viewMode,
+                timestamp: Date.now()
+            };
+            try {
+                localStorage.setItem(SESSION_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.warn('Could not save session state:', e);
+            }
+        }
+
+        function loadSessionState() {
+            try {
+                const saved = localStorage.getItem(SESSION_KEY);
+                if (!saved) return null;
+
+                const state = JSON.parse(saved);
+                // Check if expired
+                if (Date.now() - state.timestamp > SESSION_EXPIRY) {
+                    localStorage.removeItem(SESSION_KEY);
+                    return null;
+                }
+                return state;
+            } catch (e) {
+                console.warn('Could not load session state:', e);
+                return null;
+            }
+        }
+
+        function clearSessionState() {
+            localStorage.removeItem(SESSION_KEY);
+        }
+
+        // Auto-save on state changes (debounced)
+        let saveTimeout = null;
+        function scheduleStateSave() {
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveSessionState, 1000);
+        }
+
+        // Progress tracker for batch processing
+        const progressTracker = {
+            total: 0,
+            completed: 0,
+            startTime: null,
+            times: [],
+            cancelled: false,
+
+            start(total) {
+                this.total = total;
+                this.completed = 0;
+                this.startTime = Date.now();
+                this.times = [];
+                this.cancelled = false;
+                document.getElementById('batch-progress').style.display = 'block';
+                this.update();
+            },
+
+            complete() {
+                this.times.push(Date.now());
+                this.completed++;
+                this.update();
+
+                if (this.completed >= this.total) {
+                    setTimeout(() => {
+                        document.getElementById('batch-progress').style.display = 'none';
+                    }, 2000);
+                }
+            },
+
+            cancel() {
+                this.cancelled = true;
+                document.getElementById('batch-progress').style.display = 'none';
+            },
+
+            update() {
+                const pct = this.total > 0 ? Math.round((this.completed / this.total) * 100) : 0;
+                document.getElementById('progress-bar').style.width = `${pct}%`;
+                document.getElementById('progress-current').textContent = this.completed;
+                document.getElementById('progress-total').textContent = this.total;
+
+                // Calculate ETA
+                if (this.times.length > 0 && this.completed < this.total) {
+                    const avgTime = (this.times[this.times.length - 1] - this.startTime) / this.completed;
+                    const remaining = Math.round((this.total - this.completed) * avgTime / 1000);
+                    const mins = Math.floor(remaining / 60);
+                    const secs = remaining % 60;
+                    document.getElementById('progress-eta').textContent =
+                        mins > 0 ? `~${mins}m ${secs}s left` : `~${secs}s left`;
+                } else {
+                    document.getElementById('progress-eta').textContent = '';
+                }
+            }
+        };
+
         function renderImages() {
             const grid = document.getElementById('image-grid');
             grid.innerHTML = '';
+            renderedCount = 0;
+
+            // Clean up previous observer
+            if (scrollObserver) {
+                scrollObserver.disconnect();
+                scrollObserver = null;
+            }
+
             const filtered = imagesState.filter(matchesSearch);
             if (viewMode === 'table') {
                 const table = document.createElement('table');
@@ -565,26 +584,56 @@
                         </td>`;
                     tbody.appendChild(tr);
 
-                    // Bind events
-                    tr.querySelector('.row-select').addEventListener('change', (e)=>{
-                        if (e.target.checked) selectedPaths.add(image.full_path); else selectedPaths.delete(image.full_path); updateSelectionInfo();
-                    });
-                    tr.querySelector('.regenerate').addEventListener('click', ()=>queueGeneration([image.full_path]));
-                    tr.querySelector('.delete').addEventListener('click', ()=>{ imagesState = imagesState.filter(i=>i.full_path!==image.full_path); selectedPaths.delete(image.full_path); updateSelectionInfo(); renderImages(); updateCostEstimate(); });
+                    // Bind form inputs (still needed for field syncing)
                     syncInputsToState(tr, image);
                 });
 
                 grid.appendChild(table);
+
+                // Update select-all checkbox state (event handling done via delegation)
                 const selectAll = table.querySelector('#select-all');
                 if (selectAll) {
-                    selectAll.checked = filtered.length>0 && filtered.every(img=>selectedPaths.has(img.full_path));
-                    selectAll.addEventListener('change', (e)=>{
-                        filtered.forEach(img=>{ if (e.target.checked) selectedPaths.add(img.full_path); else selectedPaths.delete(img.full_path); });
-                        renderImages(); updateSelectionInfo();
-                    });
+                    selectAll.checked = filtered.length > 0 && filtered.every(img => selectedPaths.has(img.full_path));
                 }
             } else if (viewMode === 'grid') {
-                filtered.forEach(img => grid.appendChild(createGridCard(img)));
+                // Use lazy loading for grid view with many images
+                if (filtered.length > BATCH_SIZE) {
+                    // Render initial batch
+                    const initialBatch = filtered.slice(0, BATCH_SIZE);
+                    initialBatch.forEach(img => grid.appendChild(createGridCard(img)));
+                    renderedCount = initialBatch.length;
+
+                    // Add sentinel element for infinite scroll
+                    if (renderedCount < filtered.length) {
+                        const sentinel = document.createElement('div');
+                        sentinel.className = 'scroll-sentinel col-12 text-center py-3';
+                        sentinel.innerHTML = '<div class="spinner-border spinner-border-sm text-muted" role="status"></div><span class="ms-2 text-muted">Loading more...</span>';
+                        grid.appendChild(sentinel);
+
+                        // Set up intersection observer
+                        scrollObserver = new IntersectionObserver((entries) => {
+                            if (entries[0].isIntersecting && renderedCount < filtered.length) {
+                                // Remove sentinel temporarily
+                                sentinel.remove();
+
+                                // Render next batch
+                                const nextBatch = filtered.slice(renderedCount, renderedCount + BATCH_SIZE);
+                                nextBatch.forEach(img => grid.appendChild(createGridCard(img)));
+                                renderedCount += nextBatch.length;
+
+                                // Re-add sentinel if more images remain
+                                if (renderedCount < filtered.length) {
+                                    grid.appendChild(sentinel);
+                                }
+                            }
+                        }, { rootMargin: '100px' });
+
+                        scrollObserver.observe(sentinel);
+                    }
+                } else {
+                    // Small set, render all at once
+                    filtered.forEach(img => grid.appendChild(createGridCard(img)));
+                }
             } else if (viewMode === 'list') {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'col-12';
@@ -623,7 +672,31 @@
             profileSelect.addEventListener('change', () => {
                 currentProfile = profilesConfig[profileSelect.value];
                 updateAllCards();
+                scheduleStateSave();
             });
+
+            // Session recovery - check for saved state
+            const savedState = loadSessionState();
+            if (savedState && savedState.images && savedState.images.length > 0) {
+                const timeAgo = Math.round((Date.now() - savedState.timestamp) / 60000);
+                const timeStr = timeAgo < 60 ? `${timeAgo} minutes` : `${Math.round(timeAgo / 60)} hours`;
+
+                if (confirm(`Found ${savedState.images.length} images from ${timeStr} ago. Restore session?`)) {
+                    imagesState = savedState.images;
+                    selectedPaths = new Set(savedState.selectedPaths || []);
+                    if (savedState.profile && profilesConfig[savedState.profile]) {
+                        profileSelect.value = savedState.profile;
+                        currentProfile = profilesConfig[savedState.profile];
+                    }
+                    if (savedState.viewMode) {
+                        viewMode = savedState.viewMode;
+                    }
+                    renderImages();
+                    updateCostEstimate();
+                } else {
+                    clearSessionState();
+                }
+            }
 
             // Initialize cost estimate display
             const showCostEstimate = localStorage.getItem('show-cost-estimate') !== 'false';
@@ -658,12 +731,77 @@
         });
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
         
+        // Event delegation for image grid - handles all click/change events
+        document.getElementById('image-grid').addEventListener('click', (e) => {
+            const target = e.target;
+
+            // Find the image container (card, list-item, or table row)
+            const imageContainer = target.closest('[data-image-path]');
+            if (!imageContainer) return;
+
+            const imagePath = imageContainer.dataset.imagePath;
+
+            // Delete button clicked
+            if (target.closest('.delete-btn') || target.closest('.delete')) {
+                e.preventDefault();
+                imagesState = imagesState.filter(i => i.full_path !== imagePath);
+                selectedPaths.delete(imagePath);
+                renderImages();
+                updateSelectionInfo();
+                updateCostEstimate();
+                scheduleStateSave();
+                return;
+            }
+
+            // Regenerate button clicked
+            if (target.closest('.generate-single') || target.closest('.regenerate')) {
+                e.preventDefault();
+                queueGeneration([imagePath]);
+                return;
+            }
+        });
+
+        // Separate handler for change events (checkboxes)
+        document.getElementById('image-grid').addEventListener('change', (e) => {
+            const target = e.target;
+
+            // Selection checkbox changed
+            if (target.classList.contains('select-checkbox') || target.classList.contains('row-select')) {
+                const imageContainer = target.closest('[data-image-path]');
+                if (!imageContainer) return;
+
+                const imagePath = imageContainer.dataset.imagePath;
+                if (target.checked) {
+                    selectedPaths.add(imagePath);
+                } else {
+                    selectedPaths.delete(imagePath);
+                }
+                updateSelectionInfo();
+                scheduleStateSave();
+                return;
+            }
+
+            // Handle select-all checkbox in table view
+            if (target.id === 'select-all') {
+                const filtered = imagesState.filter(matchesSearch);
+                filtered.forEach(img => {
+                    if (target.checked) {
+                        selectedPaths.add(img.full_path);
+                    } else {
+                        selectedPaths.delete(img.full_path);
+                    }
+                });
+                renderImages();
+                updateSelectionInfo();
+                return;
+            }
+        });
+
         // Browse files button handler
         document.getElementById('browse-files').addEventListener('click', () => {
             if (isElectron) {
-                // Use Electron's native file dialog
-                const { ipcRenderer } = require('electron');
-                ipcRenderer.invoke('show-open-dialog', {
+                // Use Electron's native file dialog (via secure preload bridge)
+                window.electronAPI.showOpenDialog({
                     properties: ['openFile', 'multiSelections'],
                     filters: [
                         { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'] },
@@ -689,6 +827,49 @@
                 fileInput.click();
             }
         });
+
+        // Client-side image compression to reduce upload time and server load
+        async function compressImage(file, maxDimension = 1920, quality = 0.85) {
+            return new Promise((resolve, reject) => {
+                // Skip compression for small files or GIFs (to preserve animation)
+                if (file.size < 500 * 1024 || file.type === 'image/gif') {
+                    resolve(file);
+                    return;
+                }
+
+                const img = new Image();
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                img.onload = () => {
+                    let { width, height } = img;
+
+                    // Only resize if larger than max dimension
+                    if (width > maxDimension || height > maxDimension) {
+                        const ratio = Math.min(maxDimension / width, maxDimension / height);
+                        width = Math.round(width * ratio);
+                        height = Math.round(height * ratio);
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        if (blob && blob.size < file.size) {
+                            // Compression helped, use compressed version
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        } else {
+                            // Compression didn't help, use original
+                            resolve(file);
+                        }
+                    }, 'image/jpeg', quality);
+                };
+
+                img.onerror = () => resolve(file); // On error, use original
+                img.src = URL.createObjectURL(file);
+            });
+        }
 
         async function handleFiles(files) {
             // Validate files before upload
@@ -722,8 +903,13 @@
                 return;
             }
 
+            // Compress images before upload (shows progress for large batches)
+            const compressedFiles = await Promise.all(
+                validFiles.map(file => compressImage(file))
+            );
+
             const formData = new FormData();
-            validFiles.forEach(file => formData.append('images', file));
+            compressedFiles.forEach(file => formData.append('images', file));
 
             try {
                 const response = await fetch('/upload', {method: 'POST', body: formData});
@@ -739,6 +925,7 @@
                 });
                 renderImages();
                 updateCostEstimate();
+                scheduleStateSave();
             } catch (error) {
                 alert('Upload failed: ' + error.message);
             }
@@ -768,24 +955,8 @@
                 </div>`;
 
             const card = col.querySelector('.image-card');
-            // selection
-            card.querySelector('.select-checkbox').addEventListener('change', (e)=>{
-                if (e.target.checked) selectedPaths.add(image.full_path); else selectedPaths.delete(image.full_path); updateSelectionInfo();
-            });
 
-            // delete
-            card.querySelector('.delete-btn').addEventListener('click', () => {
-                imagesState = imagesState.filter(i=>i.full_path!==image.full_path);
-                selectedPaths.delete(image.full_path);
-                renderImages();
-                updateSelectionInfo();
-                updateCostEstimate();
-            });
-
-            // regenerate
-            card.querySelector('.generate-single').addEventListener('click', () => queueGeneration([image.full_path]));
-
-            // bind inputs
+            // bind inputs (still needed for form field syncing)
             syncInputsToState(card, image);
 
             // processing/complete styles
@@ -827,20 +998,7 @@
                 </div>
             `;
 
-            // selection
-            item.querySelector('.select-checkbox').addEventListener('change', (e)=>{
-                if (e.target.checked) selectedPaths.add(image.full_path); else selectedPaths.delete(image.full_path); updateSelectionInfo();
-            });
-            // delete
-            item.querySelector('.delete').addEventListener('click', ()=>{
-                imagesState = imagesState.filter(i=>i.full_path!==image.full_path);
-                selectedPaths.delete(image.full_path);
-                renderImages(); updateSelectionInfo(); updateCostEstimate();
-            });
-            // regenerate
-            item.querySelector('.regenerate').addEventListener('click', ()=>queueGeneration([image.full_path]));
-
-            // sync inputs
+            // sync inputs (still needed for form field syncing)
             syncInputsToState(item, image);
 
             return item;
@@ -848,7 +1006,16 @@
 
         function queueGeneration(paths) {
             if (!checkApiKey()) return;
+
+            // Start progress tracker for batches > 1
+            if (paths.length > 1) {
+                progressTracker.start(paths.length);
+            }
+
             paths.forEach(p => {
+                // Skip if cancelled
+                if (progressTracker.cancelled) return;
+
                 const img = getImageByPath(p);
                 if (!img) return;
                 socket.emit('generate_metadata', {
@@ -896,6 +1063,7 @@
             if (card && currentProfile) {
                 processingCount--;
                 updateProgress();
+                progressTracker.complete();
                 currentProfile.required_fields.forEach(field => {
                     const input = card.querySelector(`.${field}-input`);
                     if (input) input.value = data.metadata[field] || '';
@@ -903,8 +1071,17 @@
                 card.classList.add('complete');
                 card.classList.remove('processing');
                 const badge = card.querySelector('.status-badge');
-                if (badge) { badge.className = 'badge text-bg-success status-badge'; badge.textContent = 'Complete'; }
-                
+                if (badge) {
+                    // Show "Cached" badge if response was from cache
+                    if (data.cached) {
+                        badge.className = 'badge text-bg-info status-badge';
+                        badge.textContent = 'Cached';
+                    } else {
+                        badge.className = 'badge text-bg-success status-badge';
+                        badge.textContent = 'Complete';
+                    }
+                }
+
                 // Show notification when all processing is done
                 if (processingCount === 0 && isElectron && window.showElectronNotification) {
                     window.showElectronNotification('MetaData Refiner', 'All metadata generation completed!');
@@ -916,13 +1093,16 @@
                 item.status = 'complete';
                 item.fields = { ...item.fields, ...data.metadata };
                 if (viewMode==='table' || viewMode==='list') renderImages();
+                scheduleStateSave();
             }
         });
 
         socket.on('error', (data) => {
             processingCount--;
             updateProgress();
-            alert(`Error processing ${data.image}: ${data.message}`);
+            progressTracker.complete(); // Count errors as completed for progress tracking
+            // Show categorized error toast instead of alert
+            showToast(data);
             const item = getImageByPath(data.image);
             if (item) { item.status = 'error'; if (viewMode==='table' || viewMode==='list') renderImages(); }
         });
@@ -942,6 +1122,18 @@
             renderImages();
             updateSelectionInfo();
             updateCostEstimate();
+            scheduleStateSave();
+        });
+
+        document.getElementById('cancel-batch').addEventListener('click', () => {
+            progressTracker.cancel();
+            // Reset any processing images back to ready state
+            imagesState.forEach(img => {
+                if (img.status === 'processing') {
+                    img.status = 'ready';
+                }
+            });
+            renderImages();
         });
 
         document.getElementById('export').addEventListener('click', async () => {

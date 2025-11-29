@@ -34,6 +34,8 @@ ENV PATH=/usr/local/bin:/usr/local/sbin:$PATH
 # Set production environment variables
 ENV FLASK_DEBUG=0
 ENV FLASK_ENV=production
+# SECURITY: Set a unique SECRET_KEY when deploying - override this with docker run -e SECRET_KEY=your-secret
+ENV SECRET_KEY=change-me-in-production
 
 # Switch to the non-root user
 USER appuser

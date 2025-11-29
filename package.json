@@ -39,7 +39,9 @@
     },
     "files": [
       "main.js",
+      "preload.js",
       "app.py",
+      "config.py",
       "requirements.txt",
       "profiles.json",
       "templates/**/*",
@@ -62,6 +64,8 @@
         "to": "app",
         "filter": [
           "app.py",
+          "config.py",
+          "preload.js",
           "requirements.txt",
           "profiles.json",
           "templates/**/*",

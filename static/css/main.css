@@ -1,0 +1,166 @@
+/* MetaData Refiner - Main Styles */
+
+:root {
+    --accent: #469DB4;
+    --accent-600: #3f8aa0;
+    --accent-700: #376f80;
+    --panel-bg: rgba(255,255,255,0.9);
+    --panel-border: rgba(0,0,0,0.12);
+    --muted: rgba(0,0,0,0.6);
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.6;
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(70,157,180,0.12), transparent),
+                radial-gradient(800px 400px at 90% 0%, rgba(0,0,128,0.08), transparent);
+    min-height: 100vh;
+}
+
+.app-shell { max-width: 1600px; }
+
+/* Header */
+.brand {
+    display: flex; align-items: center; gap: .75rem;
+}
+#logo { height: 44px; width: auto; }
+.logo-fill { fill: #231f20; }
+
+/* Dropzone */
+#drop-zone {
+    border: 1.5px dashed rgba(0,0,0,0.2);
+    background: var(--panel-bg);
+    backdrop-filter: blur(6px);
+    padding: 2.25rem; text-align: center; border-radius: 14px;
+    transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+#drop-zone:hover { transform: translateY(-1px); }
+.dragover { border-color: var(--accent); background-color: rgba(70,157,180,0.08); }
+.drop-icon { width: 2rem; height: 2rem; color: var(--accent); margin: 0 auto; }
+.drop-icon svg { width: 100%; height: 100%; display: block; }
+.drop-icon path { fill: currentColor; }
+
+/* Cards */
+.image-card {
+    position: relative; border: 1px solid var(--panel-border); border-radius: 12px; overflow: hidden;
+    background: var(--panel-bg); backdrop-filter: blur(6px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    padding: 1rem; margin-bottom: 1.25rem;
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+.image-card:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.thumb-wrap { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--panel-border); background: #0f1412; }
+.thumb { max-height: 200px; width: 100%; object-fit: cover; display: block; }
+.thumb-wrap::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .18;
+    background: repeating-linear-gradient( to bottom, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.08) 1px, transparent 3px, transparent 6px ); }
+.status-badge { position: absolute; top: .75rem; left: .75rem; }
+.delete-btn { position: absolute; top: .5rem; right: .5rem; opacity: .85; }
+.generate-single { background-color: var(--accent); border-color: var(--accent); color: #fff; }
+.generate-single:hover { background-color: var(--accent-600); border-color: var(--accent-600); }
+.image-card.processing { outline: 2px solid var(--accent); }
+.image-card.complete { outline: 2px solid #198754; }
+
+/* Actions bar */
+.actions-bar {
+    position: sticky; top: .75rem; z-index: 10; border-radius: 14px;
+    background: var(--panel-bg); backdrop-filter: blur(6px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+#generate-all { background-color: var(--accent); border-color: var(--accent); }
+#generate-all:hover { background-color: var(--accent-600); border-color: var(--accent-600); }
+#export { background-color: darkblue; border-color: darkblue; }
+
+/* Cost card */
+#cost-estimate { border-radius: 12px; }
+
+/* Layout with sidebar */
+.app-layout { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
+.sidebar { position: sticky; top: 10px; height: calc(100vh - 96px); overflow: auto; padding: 8px; border-radius: 14px; background: var(--panel-bg); border: 1px solid var(--panel-border); }
+.sidebar #drop-zone { margin: 0; }
+.content { min-height: 400px; }
+
+@media (max-width: 1100px) {
+    .app-layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+}
+
+/* Table view: greenbar-inspired rows & separators */
+.table.greenbar { table-layout: fixed; }
+.table.greenbar tbody tr:nth-child(even) { background-color: rgba(70,157,180,0.04); }
+.table.greenbar td + td, .table.greenbar th + th { border-left: 1px solid var(--panel-border); }
+.table.greenbar thead tr { border-bottom: 1px solid var(--panel-border); }
+.table.greenbar th, .table.greenbar td { padding: .5rem .6rem; }
+.filename { display: inline-block; max-width: 420px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn-compact { padding: .2rem .35rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.btn-compact svg { width: 14px; height: 14px; }
+
+/* List view */
+.list-item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: stretch;
+    background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+.list-left { display: grid; grid-template-columns: 18px 96px; gap: 8px; align-items: center; }
+.list-thumb { width: 96px; height: 96px; border-radius: 10px; overflow: hidden; border: 1px solid var(--panel-border); background: #0f1412; }
+.list-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.list-main { display: grid; grid-template-rows: auto auto; gap: 8px; }
+.list-file { display: flex; gap: 10px; align-items: baseline; }
+.list-file .filename { max-width: none; flex: 1; }
+.list-fields { display: grid; grid-template-columns: 1.2fr 1.4fr 1fr 200px; gap: 8px; }
+.list-fields .form-control, .list-fields .form-select { height: 38px; }
+.list-fields textarea.form-control { height: 76px; }
+.list-right { display: grid; grid-auto-rows: min-content; gap: 6px; justify-items: end; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.status-ready { background: #6c757d; }
+.status-processing { background: var(--accent); }
+.status-complete { background: #198754; }
+.status-error { background: #dc3545; }
+
+/* Dark mode */
+body[data-bs-theme="dark"] {
+    --panel-bg: rgba(20, 24, 26, 0.85);
+    --panel-border: rgba(255,255,255,0.14);
+    --muted: rgba(255,255,255,0.65);
+    color: #e9ecef;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(70,157,180,0.10), transparent),
+      radial-gradient(800px 400px at 90% 0%, rgba(0,40,32,0.12), transparent),
+      linear-gradient(180deg, #0c0f10, #0e1213);
+}
+[data-bs-theme="dark"] .image-card { background: var(--panel-bg); border-color: var(--panel-border); }
+[data-bs-theme="dark"] .logo-fill { fill: #fff; }
+[data-bs-theme="dark"] #drop-zone { border-color: var(--panel-border); background: var(--panel-bg); }
+[data-bs-theme="dark"] .dragover { background-color: rgba(70,157,180,0.15); }
+[data-bs-theme="dark"] .actions-bar { background: var(--panel-bg); border-color: var(--panel-border); }
+[data-bs-theme="dark"] .table.greenbar tbody tr:nth-child(even) { background-color: rgba(70,157,180,0.06); }
+
+/* Severed Floor styling */
+body[data-style="severed"] { background: none; }
+[data-style="severed"] .app-shell { position: relative; }
+[data-style="severed"] .app-shell::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; opacity: .9;
+    background:
+      linear-gradient(0deg, rgba(32,64,56,0.04), rgba(32,64,56,0.04)),
+      repeating-linear-gradient( to bottom, rgba(32,64,56,0.06) 0, rgba(32,64,56,0.06) 24px, transparent 24px, transparent 48px ),
+      radial-gradient(1200px 600px at 20% 0%, rgba(64,128,112,0.12), transparent ),
+      radial-gradient(800px 400px at 80% -10%, rgba(0,40,32,0.12), transparent );
+}
+[data-style="severed"] .actions-bar, [data-style="severed"] #drop-zone, [data-style="severed"] .image-card {
+    border-radius: 8px; border: 1px solid rgba(32,64,56,0.25); background: rgba(248,252,250,0.92);
+}
+[data-style="severed"] label, [data-style="severed"] .form-text, [data-style="severed"] .text-muted { font-family: 'IBM Plex Mono', monospace; letter-spacing: .2px; color: var(--muted); }
+[data-style="severed"] .btn { border-radius: 6px; }
+[data-style="severed"] .thumb-wrap { background: #0b110f; }
+[data-style="severed"] .table.greenbar tbody tr:nth-child(even) { background-color: rgba(32,64,56,0.06); }
+
+/* Dark + Severed */
+body[data-bs-theme="dark"][data-style="severed"] .app-shell::before {
+    opacity: .75;
+    background:
+      linear-gradient(0deg, rgba(10,18,16,0.5), rgba(10,18,16,0.5)),
+      repeating-linear-gradient( to bottom, rgba(48,96,84,0.12) 0, rgba(48,96,84,0.12) 24px, transparent 24px, transparent 48px ),
+      radial-gradient(1200px 600px at 20% 0%, rgba(32,64,56,0.28), transparent ),
+      radial-gradient(800px 400px at 80% -10%, rgba(10,24,20,0.28), transparent );
+}
+body[data-bs-theme="dark"][data-style="severed"] .actions-bar,
+body[data-bs-theme="dark"][data-style="severed"] #drop-zone,
+body[data-bs-theme="dark"][data-style="severed"] .image-card {
+    background: rgba(16,20,22,0.85); border-color: rgba(255,255,255,0.12);
+}

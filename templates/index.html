@@ -3,157 +3,226 @@
 <head>
     <title>MetaData Refiner</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital@0;1&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
     <!-- Toast notification container -->
-    <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+    <div id="toast-container"></div>
 
-    <div class="container app-shell py-3">
-        <header class="d-flex justify-content-between align-items-center mb-3">
-            <div class="brand" aria-label="MetaData Refiner">
-                <svg id="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 387.89 89.6" style="height: 60px; width: auto;">
-                    <path class="logo-fill" d="M21.54,38.83V6.76c0-.48.29-.77.77-.77h8.88c.48,0,.77.24,1.06.72l14.74,24.05h.62l14.74-24.05c.29-.48.58-.72,1.06-.72h8.88c.48,0,.77.29.77.77v32.07c0,.48-.29.77-.77.77h-6.14c-.48,0-.72-.29-.72-.77v-22.61h-.53l-13.83,22.61c-.29.48-.62.77-1.15.77h-5.23c-.53,0-.86-.29-1.15-.77l-13.83-22.61h-.53v22.61c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77Z"/>
-                    <path class="logo-fill" d="M117.5,33.65v5.23c0,.48-.24.72-.72.72h-37.92c-.48,0-.77-.29-.77-.77V6.76c0-.48.29-.77.77-.77h37.68c.48,0,.72.24.72.72v5.23c0,.48-.24.72-.72.72h-30.82v6.77h30.34c.48,0,.72.24.72.72v5.28c0,.48-.24.72-.72.72h-30.34v6.77h31.06c.48,0,.72.24.72.72Z"/>
-                    <path class="logo-fill" d="M163.62,6.76v5.18c0,.48-.29.72-.77.72h-16.75v26.16c0,.48-.29.77-.77.77h-5.95c-.48,0-.77-.29-.77-.77V12.67h-16.75c-.48,0-.77-.24-.77-.72v-5.18c0-.48.29-.77.77-.77h41c.48,0,.77.29.77.77Z"/>
-                    <path class="logo-fill" d="M208.7,39.6h-7.15c-.58,0-.82-.34-1.15-.86l-2.88-4.46h-26.5l-2.88,4.46c-.34.53-.58.86-1.1.86h-7.2c-.48,0-.82-.38-.38-1.01l20.55-31.83c.29-.48.53-.77,1.06-.77h6.43c.53,0,.82.29,1.1.77l20.5,31.83c.43.62.1,1.01-.38,1.01ZM193.33,27.74l-8.74-13.63h-.62l-8.79,13.63h18.15Z"/>
-                    <path class="logo-fill" d="M257.7,14.78v16.03c0,5.47-2.59,8.78-8.54,8.78h-35.33c-.48,0-.77-.29-.77-.77V6.76c0-.48.29-.77.77-.77h35.33c5.95,0,8.54,3.31,8.54,8.78ZM250.12,15.31c0-1.97-.86-2.64-2.64-2.64h-26.79v20.26h26.79c1.78,0,2.64-.67,2.64-2.64v-14.98Z"/>
-                    <path class="logo-fill" d="M309.26,39.6h-7.15c-.58,0-.82-.34-1.15-.86l-2.88-4.46h-26.5l-2.88,4.46c-.34.53-.58.86-1.1.86h-7.2c-.48,0-.82-.38-.38-1.01l20.55-31.83c.29-.48.53-.77,1.06-.77h6.43c.53,0,.82.29,1.1.77l20.5,31.83c.43.62.1,1.01-.38,1.01ZM293.89,27.74l-8.74-13.63h-.62l-8.79,13.63h18.15Z"/>
-                    <path class="logo-fill" d="M345.11,6.76v5.18c0,.48-.29.72-.77.72h-16.75v26.16c0,.48-.29.77-.77.77h-5.95c-.48,0-.77-.29-.77-.77V12.67h-16.75c-.48,0-.77-.24-.77-.72v-5.18c0-.48.29-.77.77-.77h41c.48,0,.77.29.77.77Z"/>
-                    <path class="logo-fill" d="M387.3,39.6h-7.15c-.58,0-.82-.34-1.15-.86l-2.88-4.46h-26.5l-2.88,4.46c-.34.53-.58.86-1.1.86h-7.2c-.48,0-.82-.38-.38-1.01l20.55-31.83c.29-.48.53-.77,1.06-.77h6.43c.53,0,.82.29,1.1.77l20.5,31.83c.43.62.1,1.01-.38,1.01ZM371.94,27.74l-8.74-13.63h-.62l-8.79,13.63h18.15Z"/>
-                    <path class="logo-fill" d="M62.01,83.6h-5.57c-.58,0-.96-.29-1.34-.82l-5.38-7.92h-20.55v7.97c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h31.59c5.95,0,8.54,3.31,8.54,8.78v7.34c0,4.13-1.49,7.01-4.85,8.16l5.33,8.06c.48.67-.1,1.25-.91,1.25ZM29.17,68.19h22.95c1.78,0,2.69-.67,2.69-2.64v-6.24c0-1.97-.91-2.64-2.69-2.64h-22.95v11.52Z"/>
-                    <path class="logo-fill" d="M107.27,77.65v5.23c0,.48-.24.72-.72.72h-37.92c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h37.68c.48,0,.72.24.72.72v5.23c0,.48-.24.72-.72.72h-30.82v6.77h30.34c.48,0,.72.24.72.72v5.28c0,.48-.24.72-.72.72h-30.34v6.77h31.06c.48,0,.72.24.72.72Z"/>
-                    <path class="logo-fill" d="M151,50.72v5.23c0,.48-.24.72-.72.72h-30.82v5.81h30.34c.48,0,.72.24.72.72v5.23c0,.48-.24.72-.72.72h-30.34v13.68c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h37.68c.48,0,.72.24.72.72Z"/>
-                    <path class="logo-fill" d="M156.32,50h6.15c.48,0,.72.29.72.77v32.07c0,.48-.24.77-.72.77h-6.15c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77Z"/>
-                    <path class="logo-fill" d="M168.23,82.83v-32.07c0-.48.29-.77.77-.77h7.15c.43,0,.62.19,1.06.58l25.35,24h.67v-23.81c0-.48.24-.77.72-.77h6.14c.48,0,.77.29.77.77v32.07c0,.48-.29.77-.77.77h-7.15c-.43,0-.62-.19-1.06-.58l-25.35-24h-.67v23.81c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77Z"/>
-                    <path class="logo-fill" d="M255.3,77.65v5.23c0,.48-.24.72-.72.72h-37.92c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h37.68c.48,0,.72.24.72.72v5.23c0,.48-.24.72-.72.72h-30.82v6.77h30.34c.48,0,.72.24.72.72v5.28c0,.48-.24.72-.72.72h-30.34v6.77h31.06c.48,0,.72.24.72.72Z"/>
-                    <path class="logo-fill" d="M300.33,83.6h-5.57c-.58,0-.96-.29-1.34-.82l-5.38-7.92h-20.55v7.97c0,.48-.24.77-.72.77h-6.14c-.48,0-.77-.29-.77-.77v-32.07c0-.48.29-.77.77-.77h31.59c5.95,0,8.54,3.31,8.54,8.78v7.34c0,4.13-1.49,7.01-4.85,8.16l5.33,8.06c.48.67-.1,1.25-.91,1.25ZM267.49,68.19h22.95c1.78,0,2.69-.67,2.69-2.64v-6.24c0-1.97-.91-2.64-2.69-2.64h-22.95v11.52Z"/>
-                    <rect class="logo-fill" width="9.87" height="89.6"/>
-                </svg>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <div class="d-none d-md-flex align-items-center gap-2">
-                    <label class="form-label m-0 small text-muted">Profile</label>
-                    <select id="profile-select" class="form-select form-select-sm" style="min-width: 220px"></select>
+    <!-- Full-page drop overlay -->
+    <div id="drop-overlay" class="drop-overlay">
+        <div class="drop-overlay-content">
+            <svg viewBox="0 0 24 24" width="64" height="64">
+                <path fill="currentColor" d="M12 3c.26 0 .52.1.71.29l5 5a1 1 0 1 1-1.42 1.42L13 6.41V16a1 1 0 1 1-2 0V6.41L7.71 9.71A1 1 0 0 1 6.29 8.29l5-5A1 1 0 0 1 12 3z"/>
+                <path fill="currentColor" d="M5 18a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2H5z"/>
+            </svg>
+            <span class="drop-overlay-text">DROP FILES ANYWHERE</span>
+        </div>
+    </div>
+
+    <div class="app-shell" id="app-dropzone">
+        <!-- Header Bar -->
+        <header class="header-bar">
+            <div class="header-left">
+                <div class="brand" aria-label="MetaData Refiner">
+                    <div class="logo-mark"></div>
+                    <span class="logo-text">METADATA REFINER</span>
                 </div>
-                <button id="settings-btn" class="btn btn-outline-secondary btn-sm">Settings</button>
+            </div>
+            <div class="header-center">
+                <label class="field-label">PROFILE</label>
+                <select id="profile-select" class="profile-select"></select>
+
+                <div class="header-divider"></div>
+
+                <div class="view-toggle" role="group" aria-label="View mode">
+                    <input type="radio" name="view-mode" id="view-grid" value="grid">
+                    <label for="view-grid">GRID</label>
+                    <input type="radio" name="view-mode" id="view-list" value="list">
+                    <label for="view-list">LIST</label>
+                    <input type="radio" name="view-mode" id="view-table" value="table">
+                    <label for="view-table">TABLE</label>
+                </div>
+
+                <div class="header-divider"></div>
+
+                <input id="search-input" type="text" class="header-search" placeholder="Search...">
+            </div>
+            <div class="header-right">
+                <button id="settings-btn" class="btn-icon" title="Settings">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                </button>
             </div>
         </header>
 
-        <section class="mb-4 app-layout">
-            <aside class="sidebar">
-                <div id="drop-zone" class="mb-3">
-                    <div class="drop-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" focusable="false" role="img">
-                            <path d="M12 3c.26 0 .52.1.71.29l5 5a1 1 0 1 1-1.42 1.42L13 6.41V16a1 1 0 1 1-2 0V6.41L7.71 9.71A1 1 0 0 1 6.29 8.29l5-5A1 1 0 0 1 12 3z" />
-                            <path d="M5 18a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2H5z" />
-                        </svg>
+        <!-- Main Content - Full Width Image Grid -->
+        <main class="main-content">
+            <section id="image-grid" class="image-grid"></section>
+
+            <!-- Floating Drop Zone -->
+            <div id="drop-zone" class="drop-zone-floating">
+                <div class="drop-icon">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor" d="M12 3c.26 0 .52.1.71.29l5 5a1 1 0 1 1-1.42 1.42L13 6.41V16a1 1 0 1 1-2 0V6.41L7.71 9.71A1 1 0 0 1 6.29 8.29l5-5A1 1 0 0 1 12 3z"/>
+                        <path fill="currentColor" d="M5 18a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2H5z"/>
+                    </svg>
+                </div>
+                <span class="drop-text">DROP FILES</span>
+                <input type="file" id="file-input" multiple accept="image/*" hidden>
+                <button id="browse-files" class="btn btn-secondary btn-sm">BROWSE</button>
+            </div>
+        </main>
+
+        <!-- Control Panel (Bottom) -->
+        <div id="control-panel" class="control-panel">
+            <div class="control-panel-inner">
+                <!-- Stats & Progress (Left) -->
+                <div class="stats-panel">
+                    <div class="stat-item">
+                        <span class="stat-label">SELECTED</span>
+                        <span class="stat-value" id="selection-info">0</span>
                     </div>
-                    <p class="mb-1">Drag & drop images here</p>
-                    <p class="text-muted small">JPG, PNG, GIF, BMP, WebP up to 10MB</p>
-                    <input type="file" id="file-input" multiple accept="image/*" class="form-control mt-3">
-                    <div class="mt-2">
-                        <button id="browse-files" class="btn btn-outline-primary w-100">Browse Files...</button>
+                    <div class="stat-item" id="cost-estimate" style="display: none;">
+                        <span class="stat-label">EST. COST</span>
+                        <span class="stat-value"><span id="fresh-cost">$0.00</span> / <span id="cached-cost">$0.00</span></span>
+                    </div>
+                    <!-- Batch Progress -->
+                    <div id="batch-progress" class="progress-panel" style="display: none;">
+                        <div class="progress-header">
+                            <span class="progress-label">PROCESSING <strong id="progress-current">0</strong> OF <span id="progress-total">0</span></span>
+                            <span class="progress-eta" id="progress-eta"></span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="progress-bar"></div>
+                        </div>
+                        <button id="cancel-batch" class="btn btn-secondary btn-sm">CANCEL</button>
                     </div>
                 </div>
 
-                <div class="actions-bar p-3 d-flex flex-column gap-3">
-                    <div class="d-grid gap-2">
-                        <button id="generate-all" class="btn btn-primary" disabled>Generate All Metadata</button>
-                        <button id="generate-selected" class="btn btn-outline-primary" disabled>Generate Selected</button>
-                        <button id="delete-selected" class="btn btn-outline-danger" disabled>Delete Selected</button>
-                        <button id="export" class="btn btn-success" disabled>Export to CSV</button>
-                    </div>
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <div class="btn-group" role="group" aria-label="View mode">
-                            <input type="radio" class="btn-check" name="view-mode" id="view-grid" autocomplete="off">
-                            <label class="btn btn-outline-secondary btn-sm" for="view-grid">Grid</label>
-                            <input type="radio" class="btn-check" name="view-mode" id="view-list" autocomplete="off">
-                            <label class="btn btn-outline-secondary btn-sm" for="view-list">List</label>
-                            <input type="radio" class="btn-check" name="view-mode" id="view-table" autocomplete="off">
-                            <label class="btn btn-outline-secondary btn-sm" for="view-table">Table</label>
-                        </div>
-                    </div>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">Search</span>
-                        <input id="search-input" type="text" class="form-control" placeholder="Filename, title, tags..." />
-                    </div>
-                    <div class="text-muted small" id="selection-info">0 selected</div>
-                    <div id="cost-estimate" class="border p-2 px-3" style="display: none; background: var(--panel-bg); border-color: var(--panel-border);">
-                        <span class="me-3">Fresh: <strong id="fresh-cost">$0.00</strong></span>
-                        <span>Cached: <strong id="cached-cost">$0.00</strong></span>
-                    </div>
-
-                    <!-- Batch Progress Bar -->
-                    <div id="batch-progress" class="border rounded p-3" style="display: none; background: var(--panel-bg); border-color: var(--panel-border);">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span><strong id="progress-current">0</strong> / <span id="progress-total">0</span></span>
-                            <span class="text-muted small" id="progress-eta"></span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-success" id="progress-bar" role="progressbar" style="width: 0%"></div>
-                        </div>
-                        <div class="mt-2 text-end">
-                            <button id="cancel-batch" class="btn btn-sm btn-outline-danger">Cancel</button>
-                        </div>
-                    </div>
+                <!-- Action Buttons (Right) -->
+                <div class="action-buttons">
+                    <button id="generate-all" class="btn btn-primary" disabled>
+                        <span>GENERATE ALL</span>
+                    </button>
+                    <button id="generate-selected" class="btn btn-secondary" disabled>
+                        <span>GENERATE SELECTED</span>
+                    </button>
+                    <button id="export" class="btn btn-primary" disabled>
+                        <span>EXPORT CSV</span>
+                    </button>
+                    <button id="delete-selected" class="btn btn-danger" disabled>
+                        <span>DELETE SELECTED</span>
+                    </button>
                 </div>
-            </aside>
-
-            <main class="content">
-                <section id="image-grid" class="row"></section>
-            </main>
-        </section>
+            </div>
+        </div>
     </div>
 
-    <div id="settings-modal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">API Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">SETTINGS</h2>
+                <button type="button" class="modal-close" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="field-label" for="api-key">OPENAI API KEY</label>
+                    <input type="password" class="field-input" id="api-key" placeholder="sk-...">
+                    <span class="field-hint">Key is stored in browser localStorage. Alternatively, set OPENAI_API_KEY in your .env file.</span>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="api-key" class="form-label">OpenAI API Key</label>
-                        <input type="password" class="form-control" id="api-key" 
-                               placeholder="sk-...">
-                        <div class="form-text">Key is stored in browser localStorage. Alternatively, set OPENAI_API_KEY in your .env file.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="base-path" class="form-label">Base Path for CSV Export</label>
-                        <input type="text" class="form-control" id="base-path" 
-                               placeholder="e.g., C:/Users/MyName/Pictures">
-                        <div class="form-text">If provided, this path will be prepended to image paths in CSV exports</div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="show-cost-estimate" checked>
-                            <label class="form-check-label" for="show-cost-estimate">Show Cost Estimates</label>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="dark-mode">
-                            <label class="form-check-label" for="dark-mode">Dark Mode</label>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="severed-mode">
-                            <label class="form-check-label" for="severed-mode">Severed Mode (retro corporate)</label>
-                        </div>
+                <div class="form-group">
+                    <label class="field-label" for="base-path">BASE PATH FOR CSV EXPORT</label>
+                    <input type="text" class="field-input" id="base-path" placeholder="e.g., C:/Users/MyName/Pictures">
+                    <span class="field-hint">If provided, this path will be prepended to image paths in CSV exports.</span>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show-cost-estimate" checked>
+                        <span class="checkbox-mark"></span>
+                        <span>Show Cost Estimates</span>
+                    </label>
+                </div>
+
+                <div class="settings-divider"></div>
+
+                <div class="form-group">
+                    <label class="field-label">APPEARANCE</label>
+                    <div class="settings-row">
+                        <span>Dark Mode</span>
+                        <button id="theme-toggle-setting" class="btn btn-secondary btn-sm" onclick="toggleTheme()">TOGGLE</button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveSettings()">Save</button>
+
+                <div class="form-group">
+                    <label class="field-label">PROFILES</label>
+                    <div class="settings-row">
+                        <span>Manage metadata profiles</span>
+                        <button class="btn btn-secondary btn-sm" onclick="closeSettings(); openProfilePanel();">MANAGE</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeSettings()">CANCEL</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Management Slide Panel -->
+    <div class="slide-panel-overlay" id="profilePanelOverlay" onclick="closeProfilePanel()"></div>
+    <div class="slide-panel" id="profilePanel">
+        <div class="slide-panel-header">
+            <h2 class="panel-title">PROFILE MANAGEMENT</h2>
+            <button class="btn-icon" onclick="closeProfilePanel()" title="Close">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+            </button>
+        </div>
+        <div class="slide-panel-content">
+            <!-- Profile List -->
+            <div class="profile-list" id="profileList">
+                <!-- Populated dynamically -->
+            </div>
+
+            <button class="btn btn-primary btn-full" onclick="showNewProfileForm()">
+                + NEW PROFILE
+            </button>
+
+            <!-- Profile Form (hidden by default) -->
+            <div class="profile-form" id="profileForm" style="display: none;">
+                <input type="hidden" id="editingProfileId">
+
+                <div class="form-field">
+                    <label class="field-label">PROFILE NAME</label>
+                    <input type="text" class="field-input" id="profileNameInput" placeholder="My Custom Profile">
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">AI PROMPT</label>
+                    <textarea class="field-textarea" id="profilePromptInput" rows="10" placeholder="Instructions for the AI to generate metadata..."></textarea>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">REQUIRED FIELDS</label>
+                    <div class="dynamic-list" id="requiredFieldsList">
+                        <!-- Dynamic field items -->
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="addRequiredField()">+ ADD FIELD</button>
+                </div>
+
+                <div class="form-field">
+                    <label class="field-label">CATEGORIES</label>
+                    <textarea class="field-textarea" id="profileCategoriesInput" rows="3" placeholder="Category 1, Category 2, Category 3..."></textarea>
+                    <span class="field-hint">Comma-separated list of categories</span>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="cancelProfileForm()">CANCEL</button>
+                    <button class="btn btn-primary" onclick="saveProfile()">SAVE PROFILE</button>
                 </div>
             </div>
         </div>
@@ -162,46 +231,209 @@
     <script>
         // Theme management
         function applyTheme(isDark) {
-            document.body.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('dark-mode', isDark);
         }
-        function applyStyle(isSevered) {
-            document.body.setAttribute('data-style', isSevered ? 'severed' : 'default');
+
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            applyTheme(!isDark);
+        }
+
+        // Control panel toggle
+        function toggleControlPanel() {
+            const panel = document.getElementById('control-panel');
+            const toggle = document.getElementById('controls-toggle');
+            const isCollapsed = panel.classList.toggle('collapsed');
+            toggle.querySelector('.toggle-icon').textContent = isCollapsed ? '▶' : '▼';
         }
 
         // Settings handling
         function showSettings() {
-            const modal = new bootstrap.Modal('#settings-modal');
             document.getElementById('api-key').value = localStorage.getItem('openai-key') || '';
             document.getElementById('base-path').value = localStorage.getItem('base-path') || '';
             document.getElementById('show-cost-estimate').checked = localStorage.getItem('show-cost-estimate') !== 'false';
-            document.getElementById('dark-mode').checked = localStorage.getItem('dark-mode') === 'true';
-            document.getElementById('severed-mode').checked = localStorage.getItem('severed-mode') === 'true';
-            modal.show();
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
         }
 
         function saveSettings() {
             const key = document.getElementById('api-key').value.trim();
             const showCostEstimate = document.getElementById('show-cost-estimate').checked;
             const basePath = document.getElementById('base-path').value.trim();
-            const darkMode = document.getElementById('dark-mode').checked;
-            const severedMode = document.getElementById('severed-mode').checked;
-            
+
             if (key) {
                 localStorage.setItem('openai-key', key);
             }
             localStorage.setItem('show-cost-estimate', showCostEstimate);
             localStorage.setItem('base-path', basePath);
-            localStorage.setItem('dark-mode', darkMode);
-            localStorage.setItem('severed-mode', severedMode);
-            
-            document.getElementById('cost-estimate').style.display = 
-                showCostEstimate ? 'block' : 'none';
-            
-            applyTheme(darkMode);
-            applyStyle(severedMode);
-            
-            bootstrap.Modal.getInstance('#settings-modal').hide();
+
+            document.getElementById('cost-estimate').style.display =
+                showCostEstimate ? 'flex' : 'none';
+
+            closeSettings();
             updateCostEstimate();
+        }
+
+        // Profile Management Functions
+        function openProfilePanel() {
+            document.getElementById('profilePanel').classList.add('open');
+            document.getElementById('profilePanelOverlay').classList.add('visible');
+            renderProfileList();
+        }
+
+        function closeProfilePanel() {
+            document.getElementById('profilePanel').classList.remove('open');
+            document.getElementById('profilePanelOverlay').classList.remove('visible');
+            cancelProfileForm();
+        }
+
+        function renderProfileList() {
+            const list = document.getElementById('profileList');
+            list.innerHTML = '';
+
+            Object.entries(profilesConfig).forEach(([id, profile]) => {
+                const item = document.createElement('div');
+                item.className = 'profile-list-item';
+                item.innerHTML = `
+                    <span class="profile-name">${profile.name}</span>
+                    <button class="btn btn-secondary btn-sm" onclick="editProfile('${id}')">EDIT</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function showNewProfileForm() {
+            document.getElementById('editingProfileId').value = '';
+            document.getElementById('profileNameInput').value = '';
+            document.getElementById('profilePromptInput').value = '';
+            document.getElementById('profileCategoriesInput').value = '';
+
+            // Clear and add default fields
+            const fieldsList = document.getElementById('requiredFieldsList');
+            fieldsList.innerHTML = '';
+            ['title', 'description', 'tags', 'category'].forEach(f => addRequiredField(f));
+
+            document.getElementById('profileForm').style.display = 'block';
+        }
+
+        function editProfile(profileId) {
+            const profile = profilesConfig[profileId];
+            if (!profile) return;
+
+            document.getElementById('editingProfileId').value = profileId;
+            document.getElementById('profileNameInput').value = profile.name || '';
+            document.getElementById('profilePromptInput').value = profile.prompt || '';
+            document.getElementById('profileCategoriesInput').value = (profile.categories || []).join(', ');
+
+            // Populate required fields
+            const fieldsList = document.getElementById('requiredFieldsList');
+            fieldsList.innerHTML = '';
+            (profile.required_fields || []).forEach(f => addRequiredField(f));
+
+            document.getElementById('profileForm').style.display = 'block';
+        }
+
+        function addRequiredField(value = '') {
+            const list = document.getElementById('requiredFieldsList');
+            const item = document.createElement('div');
+            item.className = 'dynamic-list-item';
+            item.innerHTML = `
+                <input type="text" class="field-input required-field-input" value="${value}" placeholder="field_name">
+                <button class="btn-icon" onclick="this.parentElement.remove()" title="Remove">
+                    <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                </button>
+            `;
+            list.appendChild(item);
+        }
+
+        function getRequiredFields() {
+            const inputs = document.querySelectorAll('#requiredFieldsList .required-field-input');
+            return Array.from(inputs).map(i => i.value.trim().toLowerCase().replace(/\s+/g, '_')).filter(v => v);
+        }
+
+        function cancelProfileForm() {
+            document.getElementById('profileForm').style.display = 'none';
+            document.getElementById('editingProfileId').value = '';
+        }
+
+        async function saveProfile() {
+            const profileId = document.getElementById('editingProfileId').value;
+            const name = document.getElementById('profileNameInput').value.trim();
+            const prompt = document.getElementById('profilePromptInput').value.trim();
+            const requiredFields = getRequiredFields();
+            const categoriesText = document.getElementById('profileCategoriesInput').value;
+            const categories = categoriesText.split(',').map(c => c.trim()).filter(c => c);
+
+            if (!name) {
+                alert('Profile name is required');
+                return;
+            }
+
+            if (requiredFields.length === 0) {
+                alert('At least one required field is needed');
+                return;
+            }
+
+            const profileData = {
+                name,
+                prompt,
+                required_fields: requiredFields,
+                categories
+            };
+
+            const url = profileId ? `/api/profiles/${profileId}` : '/api/profiles';
+            const method = profileId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(profileData)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to save profile');
+                }
+
+                // Update local state
+                profilesConfig[result.id] = result.profile;
+
+                // Also save to localStorage as backup
+                localStorage.setItem('profiles_backup', JSON.stringify(profilesConfig));
+
+                // Refresh UI
+                renderProfileList();
+                populateProfileDropdown();
+                cancelProfileForm();
+
+                // Show success notification
+                showToast({
+                    title: 'Success',
+                    message: profileId ? 'Profile updated successfully' : 'Profile created successfully',
+                    category: 'success'
+                });
+            } catch (error) {
+                console.error('Failed to save profile:', error);
+                alert('Failed to save profile: ' + error.message);
+            }
+        }
+
+        function populateProfileDropdown() {
+            const profileSelect = document.getElementById('profile-select');
+            const currentValue = profileSelect.value;
+            profileSelect.innerHTML = Object.entries(profilesConfig).map(([id, profile]) =>
+                `<option value="${id}">${profile.name}</option>`
+            ).join('');
+            // Restore selection if still valid
+            if (profilesConfig[currentValue]) {
+                profileSelect.value = currentValue;
+            }
         }
 
         function checkApiKey() {
@@ -247,9 +479,6 @@
             document.getElementById('cached-cost').textContent = 
                 `$${cachedCost.toFixed(4)}`;
         }
-
-        // Add event listener for settings button
-        document.getElementById('settings-btn').addEventListener('click', showSettings);
 
         // Detect if running in Electron (via preload script)
         const isElectron = window.electronAPI && window.electronAPI.isElectron;
@@ -299,37 +528,41 @@
         // Toast notification for categorized errors
         function showToast(data) {
             const container = document.getElementById('toast-container');
-            const colors = {
-                auth: 'danger',
-                quota: 'warning',
-                timeout: 'info',
-                network: 'info',
-                model: 'secondary',
-                server: 'secondary'
+            const categories = {
+                auth: 'error',
+                quota: 'processing',
+                timeout: 'ready',
+                network: 'ready',
+                model: 'ready',
+                server: 'ready'
             };
-            const bgColor = colors[data.category] || 'secondary';
+            const statusClass = categories[data.category] || 'ready';
             const filename = data.image ? data.image.split('/').pop() : 'Unknown';
 
             const toast = document.createElement('div');
-            toast.className = `toast show border-start border-4 border-${bgColor}`;
+            toast.className = `toast ${statusClass}`;
             toast.setAttribute('role', 'alert');
             toast.innerHTML = `
                 <div class="toast-header">
-                    <strong class="me-auto text-${bgColor}">${data.title || 'Error'}</strong>
-                    <small class="text-muted">${filename}</small>
-                    <button type="button" class="btn-close" onclick="this.closest('.toast').remove()"></button>
+                    <span class="status-dot ${statusClass}"></span>
+                    <strong class="toast-title">${data.title || 'ERROR'}</strong>
+                    <span class="toast-file">${filename}</span>
+                    <button type="button" class="toast-close" onclick="this.closest('.toast').remove()">&times;</button>
                 </div>
                 <div class="toast-body">
-                    <p class="mb-1">${data.message || 'An error occurred'}</p>
-                    ${data.action ? `<p class="small text-muted mb-2">${data.action}</p>` : ''}
-                    ${data.retry_allowed && data.image ? `<button class="btn btn-sm btn-outline-primary" onclick="retryImage('${data.image}'); this.closest('.toast').remove();">Retry</button>` : ''}
+                    <p class="toast-message">${data.message || 'An error occurred'}</p>
+                    ${data.action ? `<p class="toast-action">${data.action}</p>` : ''}
+                    ${data.retry_allowed && data.image ? `<button class="btn-secondary btn-sm" onclick="retryImage('${data.image}'); this.closest('.toast').remove();">RETRY</button>` : ''}
                 </div>
             `;
             container.appendChild(toast);
 
             // Auto-remove after 10 seconds
             setTimeout(() => {
-                if (toast.parentNode) toast.remove();
+                if (toast.parentNode) {
+                    toast.classList.add('fade-out');
+                    setTimeout(() => toast.remove(), 300);
+                }
             }, 10000);
         }
 
@@ -522,106 +755,101 @@
             }
 
             const filtered = imagesState.filter(matchesSearch);
+
+            // Clear all view classes first
+            grid.classList.remove('image-grid', 'table-view', 'list-view');
+
             if (viewMode === 'table') {
+                grid.classList.add('table-view');
+
                 const table = document.createElement('table');
-                table.className = 'table table-hover align-middle rounded-3 overflow-hidden greenbar';
+                table.className = 'data-table';
                 table.innerHTML = `
-                    <colgroup>
-                        <col style="width:36px">
-                        <col style="width:420px">
-                        <col style="width:240px">
-                        <col style="width:300px">
-                        <col style="width:240px">
-                        <col style="width:160px">
-                        <col style="width:110px">
-                        <col style="width:96px">
-                    </colgroup>
-                    <thead class="table-light">
+                    <thead>
                         <tr>
-                            <th style="width:36px"><input type="checkbox" id="select-all"></th>
-                            <th>Image</th>
-                            <th>Title</th>
-                            <th>Description</th>
-                            <th>Tags</th>
-                            <th style="width:160px">Category</th>
-                            <th style="width:120px">Status</th>
-                            <th style="width:120px">Actions</th>
+                            <th class="col-select"><input type="checkbox" id="select-all"></th>
+                            <th class="col-image">IMAGE</th>
+                            <th class="col-title">TITLE</th>
+                            <th class="col-desc">DESCRIPTION</th>
+                            <th class="col-tags">TAGS</th>
+                            <th class="col-cat">CATEGORY</th>
+                            <th class="col-status">STATUS</th>
+                            <th class="col-actions">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody></tbody>`;
                 const tbody = table.querySelector('tbody');
+
                 filtered.forEach(image => {
                     const tr = document.createElement('tr');
                     tr.dataset.imagePath = image.full_path;
+                    const statusClass = image.status === 'complete' ? 'complete' :
+                                       image.status === 'processing' ? 'processing' :
+                                       image.status === 'error' ? 'error' : 'ready';
                     tr.innerHTML = `
-                        <td><input type="checkbox" class="row-select" ${selectedPaths.has(image.full_path)?'checked':''}></td>
-                        <td class="d-flex align-items-center gap-2">
-                            <div class="thumb-wrap" style="width:72px;height:72px;border-radius:8px;overflow:hidden;">
-                                <img src="${image.full_path}" alt="thumb" loading="lazy" style="width:72px;height:72px;object-fit:cover;display:block;">
-                            </div>
-                            <span class="filename" title="${image.full_path.split('/').pop()}">${image.full_path.split('/').pop()}</span>
+                        <td class="col-select">
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="row-select" ${selectedPaths.has(image.full_path)?'checked':''}>
+                                <span class="checkbox-mark"></span>
+                            </label>
                         </td>
-                        <td><input type="text" class="form-control form-control-sm title-input" value="${image.fields.title||''}"></td>
-                        <td><textarea rows="1" class="form-control form-control-sm description-input">${image.fields.description||''}</textarea></td>
-                        <td><input type="text" class="form-control form-control-sm tags-input" value="${image.fields.tags||''}"></td>
-                        <td>
-                            <select class="form-select form-select-sm category-input">
+                        <td class="col-image">
+                            <div class="table-thumb">
+                                <img src="${image.full_path}" alt="thumb" loading="lazy">
+                            </div>
+                            <span class="filename">${image.full_path.split('/').pop()}</span>
+                        </td>
+                        <td class="col-title"><input type="text" class="field-input title-input" value="${image.fields.title||''}"></td>
+                        <td class="col-desc"><textarea class="field-input description-input">${image.fields.description||''}</textarea></td>
+                        <td class="col-tags"><input type="text" class="field-input tags-input" value="${image.fields.tags||''}"></td>
+                        <td class="col-cat">
+                            <select class="field-select category-input">
                                 ${generateCategoryOptions(currentProfile.categories, image.fields.category||'')}
                             </select>
                         </td>
-                        <td>
-                            <span class="badge ${image.status==='complete'?'text-bg-success':image.status==='processing'?'text-bg-info':image.status==='error'?'text-bg-danger':'text-bg-secondary'}">${(image.status||'ready')[0].toUpperCase()+ (image.status||'ready').slice(1)}</span>
+                        <td class="col-status">
+                            <span class="status-dot ${statusClass}"></span>
+                            <span class="status-text">${(image.status||'ready').toUpperCase()}</span>
                         </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-outline-primary btn-compact regenerate" title="Regenerate" aria-label="Regenerate">
-                                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 6h-2.06A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L14 10h6V4l-2.35 2.35z"/></svg>
-                                </button>
-                                <button class="btn btn-outline-danger btn-compact delete" title="Delete" aria-label="Delete">
-                                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 7h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7zm5-3h2a1 1 0 0 1 1 1v1h4v2H4V6h4V5a1 1 0 0 1 1-1z"/></svg>
-                                </button>
-                            </div>
+                        <td class="col-actions">
+                            <button class="btn-icon regenerate" title="Regenerate">
+                                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 6h-2.06A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L14 10h6V4l-2.35 2.35z"/></svg>
+                            </button>
+                            <button class="btn-icon delete" title="Delete">
+                                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                            </button>
                         </td>`;
                     tbody.appendChild(tr);
-
-                    // Bind form inputs (still needed for field syncing)
                     syncInputsToState(tr, image);
                 });
 
                 grid.appendChild(table);
 
-                // Update select-all checkbox state (event handling done via delegation)
                 const selectAll = table.querySelector('#select-all');
                 if (selectAll) {
                     selectAll.checked = filtered.length > 0 && filtered.every(img => selectedPaths.has(img.full_path));
                 }
             } else if (viewMode === 'grid') {
+                grid.classList.add('image-grid');
+
                 // Use lazy loading for grid view with many images
                 if (filtered.length > BATCH_SIZE) {
-                    // Render initial batch
                     const initialBatch = filtered.slice(0, BATCH_SIZE);
                     initialBatch.forEach(img => grid.appendChild(createGridCard(img)));
                     renderedCount = initialBatch.length;
 
-                    // Add sentinel element for infinite scroll
                     if (renderedCount < filtered.length) {
                         const sentinel = document.createElement('div');
-                        sentinel.className = 'scroll-sentinel col-12 text-center py-3';
-                        sentinel.innerHTML = '<div class="spinner-border spinner-border-sm text-muted" role="status"></div><span class="ms-2 text-muted">Loading more...</span>';
+                        sentinel.className = 'scroll-sentinel';
+                        sentinel.innerHTML = '<div class="loading-spinner"></div><span>Loading more...</span>';
                         grid.appendChild(sentinel);
 
-                        // Set up intersection observer
                         scrollObserver = new IntersectionObserver((entries) => {
                             if (entries[0].isIntersecting && renderedCount < filtered.length) {
-                                // Remove sentinel temporarily
                                 sentinel.remove();
-
-                                // Render next batch
                                 const nextBatch = filtered.slice(renderedCount, renderedCount + BATCH_SIZE);
                                 nextBatch.forEach(img => grid.appendChild(createGridCard(img)));
                                 renderedCount += nextBatch.length;
-
-                                // Re-add sentinel if more images remain
                                 if (renderedCount < filtered.length) {
                                     grid.appendChild(sentinel);
                                 }
@@ -631,14 +859,11 @@
                         scrollObserver.observe(sentinel);
                     }
                 } else {
-                    // Small set, render all at once
                     filtered.forEach(img => grid.appendChild(createGridCard(img)));
                 }
             } else if (viewMode === 'list') {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'col-12';
-                filtered.forEach(img => wrapper.appendChild(createListItem(img)));
-                grid.appendChild(wrapper);
+                grid.classList.add('list-view');
+                filtered.forEach(img => grid.appendChild(createListItem(img)));
             }
 
             // Enable/disable action buttons
@@ -654,21 +879,27 @@
             // Initialize theme
             const darkMode = localStorage.getItem('dark-mode') === 'true';
             applyTheme(darkMode);
-            const severedMode = localStorage.getItem('severed-mode') === 'true';
-            applyStyle(severedMode);
-            
+
+            // Header button event listeners
+            document.getElementById('settings-btn').addEventListener('click', showSettings);
+
+            // Close modal on overlay click
+            document.getElementById('settings-modal').addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) closeSettings();
+            });
+
             const response = await fetch('/api/profiles');
             const data = await response.json();
             profilesConfig = data.profiles;
-            
+
             const profileSelect = document.getElementById('profile-select');
             profileSelect.innerHTML = Object.entries(profilesConfig).map(([id, profile]) =>
                 `<option value="${id}">${profile.name}</option>`
             ).join('');
-            
+
             profileSelect.value = data.default_profile;
             currentProfile = profilesConfig[data.default_profile];
-            
+
             profileSelect.addEventListener('change', () => {
                 currentProfile = profilesConfig[profileSelect.value];
                 updateAllCards();
@@ -700,8 +931,8 @@
 
             // Initialize cost estimate display
             const showCostEstimate = localStorage.getItem('show-cost-estimate') !== 'false';
-            document.getElementById('cost-estimate').style.display = 
-                showCostEstimate ? 'block' : 'none';
+            document.getElementById('cost-estimate').style.display =
+                showCostEstimate ? 'flex' : 'none';
 
             // View mode setup
             document.getElementById('view-grid').checked = viewMode === 'grid';
@@ -715,20 +946,44 @@
             document.getElementById('search-input').addEventListener('input', (e)=>{ searchQuery = e.target.value.trim(); renderImages(); });
         });
 
-        // File handling
+        // File handling - Full page drop zone
         const dropZone = document.getElementById('drop-zone');
+        const dropOverlay = document.getElementById('drop-overlay');
         const fileInput = document.getElementById('file-input');
+        let dragCounter = 0;
 
-        dropZone.addEventListener('dragover', (e) => {
+        // Full page drag/drop
+        document.addEventListener('dragenter', (e) => {
             e.preventDefault();
-            dropZone.classList.add('dragover');
+            dragCounter++;
+            if (e.dataTransfer.types.includes('Files')) {
+                dropOverlay.classList.add('visible');
+            }
         });
 
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => {
+        document.addEventListener('dragleave', (e) => {
             e.preventDefault();
-            handleFiles(e.dataTransfer.files);
+            dragCounter--;
+            if (dragCounter === 0) {
+                dropOverlay.classList.remove('visible');
+            }
         });
+
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+            dropOverlay.classList.remove('visible');
+            if (e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        // Small drop zone in bottom bar still works for click
+        dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
         
         // Event delegation for image grid - handles all click/change events
@@ -932,75 +1187,136 @@
         }
 
         function createGridCard(image) {
-            const col = document.createElement('div');
-            col.className = 'col-12 col-md-6 col-lg-4';
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.imagePath = image.full_path;
             const checked = selectedPaths.has(image.full_path) ? 'checked' : '';
-            col.innerHTML = `
-                <div class="image-card" data-image-path="${image.full_path}">
-                    <div class="d-flex justify-content-between">
-                        <div class="form-check">
-                            <input class="form-check-input select-checkbox" type="checkbox" ${checked}>
-                        </div>
-                        <span class="badge ${image.status==='complete'?'text-bg-success':image.status==='processing'?'text-bg-info':image.status==='error'?'text-bg-danger':'text-bg-secondary'} status-badge">${(image.status||'ready')[0].toUpperCase()+ (image.status||'ready').slice(1)}</span>
-                    </div>
-                    <button class="btn btn-sm btn-outline-danger delete-btn">✕</button>
-                    <img src="${image.full_path}" class="thumb mb-3" alt="uploaded image" loading="lazy">
-                    <div class="metadata-fields">
-                        ${createMetadataFields(currentProfile, image.fields)}
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-2">
-                        <button class="btn btn-sm generate-single">Regenerate</button>
-                        <span class="text-muted small">Editable before export</span>
-                    </div>
-                </div>`;
+            const statusClass = image.status === 'complete' ? 'complete' :
+                               image.status === 'processing' ? 'processing' :
+                               image.status === 'error' ? 'error' : 'ready';
+            const statusText = (image.status || 'ready').toUpperCase();
 
-            const card = col.querySelector('.image-card');
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <span class="status-dot ${statusClass}"></span>
+                        <span class="status-text">${statusText}</span>
+                    </div>
+                    <div class="card-header-right">
+                        <label class="checkbox-label card-select">
+                            <input type="checkbox" class="select-checkbox" ${checked}>
+                            <span class="checkbox-mark"></span>
+                        </label>
+                        <button class="btn-icon expand-btn" title="Expand">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                        </button>
+                        <button class="btn-icon delete-btn" title="Delete">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-image">
+                    <img src="${image.full_path}" alt="uploaded image" loading="lazy">
+                </div>
+                <div class="card-fields">
+                    <div class="field-group">
+                        <label class="field-label">TITLE</label>
+                        <input type="text" class="field-input title-input" value="${image.fields.title || ''}" placeholder="Enter title...">
+                    </div>
+                    <div class="field-group expandable-field" style="display: none;">
+                        <label class="field-label">DESCRIPTION</label>
+                        <textarea class="field-input description-input" placeholder="Enter description...">${image.fields.description || ''}</textarea>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">TAGS</label>
+                        <input type="text" class="field-input tags-input" value="${image.fields.tags || ''}" placeholder="Enter tags...">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">CATEGORY</label>
+                        <select class="field-select category-input">
+                            ${generateCategoryOptions(currentProfile.categories, image.fields.category || '')}
+                        </select>
+                    </div>
+                </div>
+                <div class="card-footer expandable-field" style="display: none;">
+                    <button class="btn-secondary btn-sm regenerate">REGENERATE</button>
+                </div>
+            `;
 
-            // bind inputs (still needed for form field syncing)
+            // Bind expand button
+            const expandBtn = card.querySelector('.expand-btn');
+            const expandableFields = card.querySelectorAll('.expandable-field');
+            expandBtn.addEventListener('click', () => {
+                card.classList.toggle('expanded');
+                expandableFields.forEach(f => {
+                    f.style.display = card.classList.contains('expanded') ? 'block' : 'none';
+                });
+                expandBtn.querySelector('svg').style.transform = card.classList.contains('expanded') ? 'rotate(180deg)' : '';
+            });
+
+            // Bind inputs for form field syncing
             syncInputsToState(card, image);
 
-            // processing/complete styles
-            if (image.status==='processing') card.classList.add('processing');
-            if (image.status==='complete') card.classList.add('complete');
+            // Processing/complete styles
+            if (image.status === 'processing') card.classList.add('processing');
+            if (image.status === 'complete') card.classList.add('complete');
 
-            return col;
+            return card;
         }
 
         function createListItem(image) {
             const item = document.createElement('div');
             item.className = 'list-item';
-            const statusClass = image.status==='complete' ? 'status-complete' : image.status==='processing' ? 'status-processing' : image.status==='error' ? 'status-error' : 'status-ready';
             item.dataset.imagePath = image.full_path;
+            const statusClass = image.status === 'complete' ? 'complete' :
+                               image.status === 'processing' ? 'processing' :
+                               image.status === 'error' ? 'error' : 'ready';
+
             item.innerHTML = `
                 <div class="list-left">
-                    <input type="checkbox" class="form-check-input select-checkbox" ${selectedPaths.has(image.full_path)?'checked':''}>
-                    <div class="list-thumb"><img src="${image.full_path}" alt="thumb" loading="lazy"></div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="select-checkbox" ${selectedPaths.has(image.full_path)?'checked':''}>
+                        <span class="checkbox-mark"></span>
+                    </label>
+                    <div class="list-thumb">
+                        <img src="${image.full_path}" alt="thumb" loading="lazy">
+                    </div>
                 </div>
                 <div class="list-main">
-                    <div class="list-file small text-muted">
+                    <div class="list-file">
                         <span class="status-dot ${statusClass}"></span>
-                        <span class="filename" title="${image.full_path.split('/').pop()}">${image.full_path.split('/').pop()}</span>
+                        <span class="filename">${image.full_path.split('/').pop()}</span>
                     </div>
                     <div class="list-fields">
-                        <input type="text" class="form-control title-input" placeholder="Title" value="${image.fields.title||''}">
-                        <textarea class="form-control description-input" placeholder="Description">${image.fields.description||''}</textarea>
-                        <input type="text" class="form-control tags-input" placeholder="Tags" value="${image.fields.tags||''}">
-                        <select class="form-select category-input">${generateCategoryOptions(currentProfile.categories, image.fields.category||'')}</select>
+                        <div class="field-group">
+                            <label class="field-label">TITLE</label>
+                            <input type="text" class="field-input title-input" value="${image.fields.title||''}" placeholder="Enter title...">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">DESCRIPTION</label>
+                            <textarea class="field-input description-input" placeholder="Enter description...">${image.fields.description||''}</textarea>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">TAGS</label>
+                            <input type="text" class="field-input tags-input" value="${image.fields.tags||''}" placeholder="Enter tags...">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">CATEGORY</label>
+                            <select class="field-select category-input">${generateCategoryOptions(currentProfile.categories, image.fields.category||'')}</select>
+                        </div>
                     </div>
                 </div>
                 <div class="list-right">
-                    <button class="btn btn-outline-primary btn-compact regenerate" title="Regenerate" aria-label="Regenerate">
-                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 6h-2.06A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L14 10h6V4l-2.35 2.35z"/></svg>
+                    <button class="btn-icon regenerate" title="Regenerate">
+                        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 6h-2.06A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L14 10h6V4l-2.35 2.35z"/></svg>
                     </button>
-                    <button class="btn btn-outline-danger btn-compact delete" title="Delete" aria-label="Delete">
-                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 7h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7zm5-3h2a1 1 0 0 1 1 1v1h4v2H4V6h4V5a1 1 0 0 1 1-1z"/></svg>
+                    <button class="btn-icon delete" title="Delete">
+                        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
                     </button>
                 </div>
             `;
 
-            // sync inputs (still needed for form field syncing)
             syncInputsToState(item, image);
-
             return item;
         }
 

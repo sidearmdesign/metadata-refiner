@@ -242,6 +242,85 @@ def get_profiles():
         'default_profile': 'zedge'
     })
 
+
+def save_profiles_to_file():
+    """Save profiles to profiles.json file."""
+    try:
+        with open(profiles_path, 'w') as f:
+            json.dump({'profiles': PROFILES}, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving profiles: {e}", flush=True)
+        return False
+
+
+@app.route('/api/profiles', methods=['POST'])
+def create_profile():
+    """Create a new profile."""
+    data = request.get_json()
+
+    if not data or not data.get('name'):
+        return jsonify({'error': 'Profile name is required'}), 400
+
+    # Generate profile ID from name
+    profile_id = data['name'].lower().replace(' ', '_')
+    profile_id = re.sub(r'[^a-z0-9_]', '', profile_id)
+
+    if not profile_id:
+        return jsonify({'error': 'Invalid profile name'}), 400
+
+    if profile_id in PROFILES:
+        return jsonify({'error': 'Profile already exists'}), 400
+
+    required_fields = data.get('required_fields', ['title', 'description', 'tags'])
+
+    PROFILES[profile_id] = {
+        'name': data['name'],
+        'prompt': data.get('prompt', ''),
+        'required_fields': required_fields,
+        'categories': data.get('categories', []),
+        'csv_columns': ['full_path'] + required_fields
+    }
+
+    if save_profiles_to_file():
+        return jsonify({'id': profile_id, 'profile': PROFILES[profile_id]})
+    else:
+        # Rollback in-memory change if save failed
+        del PROFILES[profile_id]
+        return jsonify({'error': 'Failed to save profile'}), 500
+
+
+@app.route('/api/profiles/<profile_id>', methods=['PUT'])
+def update_profile(profile_id):
+    """Update an existing profile."""
+    if profile_id not in PROFILES:
+        return jsonify({'error': 'Profile not found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    # Store old values for rollback
+    old_profile = PROFILES[profile_id].copy()
+
+    required_fields = data.get('required_fields', old_profile.get('required_fields', []))
+
+    PROFILES[profile_id].update({
+        'name': data.get('name', old_profile['name']),
+        'prompt': data.get('prompt', old_profile.get('prompt', '')),
+        'required_fields': required_fields,
+        'categories': data.get('categories', old_profile.get('categories', [])),
+        'csv_columns': ['full_path'] + required_fields
+    })
+
+    if save_profiles_to_file():
+        return jsonify({'id': profile_id, 'profile': PROFILES[profile_id]})
+    else:
+        # Rollback in-memory change if save failed
+        PROFILES[profile_id] = old_profile
+        return jsonify({'error': 'Failed to save profile'}), 500
+
+
 @app.route('/upload', methods=['POST'])
 @limiter.limit(config.upload_rate_limit)
 def upload():

@@ -76,6 +76,17 @@
         /* Cost card */
         #cost-estimate { border-radius: 12px; }
 
+        /* Layout with sidebar */
+        .app-layout { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
+        .sidebar { position: sticky; top: 10px; height: calc(100vh - 96px); overflow: auto; padding: 8px; border-radius: 14px; background: var(--panel-bg); border: 1px solid var(--panel-border); }
+        .sidebar #drop-zone { margin: 0; }
+        .content { min-height: 400px; }
+
+        @media (max-width: 1100px) {
+            .app-layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; height: auto; }
+        }
+
         /* Table view: greenbar-inspired rows & separators */
         .table.greenbar { table-layout: fixed; }
         .table.greenbar tbody tr:nth-child(even) { background-color: rgba(70,157,180,0.04); }
@@ -85,6 +96,25 @@
         .filename { display: inline-block; max-width: 420px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .btn-compact { padding: .2rem .35rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
         .btn-compact svg { width: 14px; height: 14px; }
+
+        /* List view */
+        .list-item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: stretch;
+            background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+        .list-left { display: grid; grid-template-columns: 18px 96px; gap: 8px; align-items: center; }
+        .list-thumb { width: 96px; height: 96px; border-radius: 10px; overflow: hidden; border: 1px solid var(--panel-border); background: #0f1412; }
+        .list-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .list-main { display: grid; grid-template-rows: auto auto; gap: 8px; }
+        .list-file { display: flex; gap: 10px; align-items: baseline; }
+        .list-file .filename { max-width: none; flex: 1; }
+        .list-fields { display: grid; grid-template-columns: 1.2fr 1.4fr 1fr 200px; gap: 8px; }
+        .list-fields .form-control, .list-fields .form-select { height: 38px; }
+        .list-fields textarea.form-control { height: 76px; }
+        .list-right { display: grid; grid-auto-rows: min-content; gap: 6px; justify-items: end; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-ready { background: #6c757d; }
+        .status-processing { background: var(--accent); }
+        .status-complete { background: #198754; }
+        .status-error { background: #dc3545; }
 
         /* Dark mode */
         body[data-bs-theme="dark"] {
@@ -172,49 +202,56 @@
             </div>
         </header>
 
-        <section class="mb-4">
-            <div id="drop-zone" class="mb-3">
-                <div class="drop-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" focusable="false" role="img">
-                        <path d="M12 3c.26 0 .52.1.71.29l5 5a1 1 0 1 1-1.42 1.42L13 6.41V16a1 1 0 1 1-2 0V6.41L7.71 9.71A1 1 0 0 1 6.29 8.29l5-5A1 1 0 0 1 12 3z" />
-                        <path d="M5 18a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2H5z" />
-                    </svg>
-                </div>
-                <p class="mb-1">Drag & drop images here</p>
-                <p class="text-muted small">JPG, PNG, GIF, BMP, WebP up to 10MB</p>
-                <input type="file" id="file-input" multiple accept="image/*" class="form-control mt-3">
-                <div class="mt-2">
-                    <button id="browse-files" class="btn btn-outline-primary">Browse Files...</button>
-                </div>
-            </div>
-            <div class="actions-bar p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <button id="generate-all" class="btn btn-primary" disabled>Generate All Metadata</button>
-                    <button id="generate-selected" class="btn btn-outline-primary" disabled>Generate Selected</button>
-                    <button id="delete-selected" class="btn btn-outline-danger" disabled>Delete Selected</button>
-                    <button id="export" class="btn btn-success" disabled>Export to CSV</button>
-                </div>
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <div class="btn-group" role="group" aria-label="View mode">
-                        <input type="radio" class="btn-check" name="view-mode" id="view-grid" autocomplete="off">
-                        <label class="btn btn-outline-secondary btn-sm" for="view-grid">Grid</label>
-                        <input type="radio" class="btn-check" name="view-mode" id="view-table" autocomplete="off">
-                        <label class="btn btn-outline-secondary btn-sm" for="view-table">Table</label>
+        <section class="mb-4 app-layout">
+            <aside class="sidebar">
+                <div id="drop-zone" class="mb-3">
+                    <div class="drop-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false" role="img">
+                            <path d="M12 3c.26 0 .52.1.71.29l5 5a1 1 0 1 1-1.42 1.42L13 6.41V16a1 1 0 1 1-2 0V6.41L7.71 9.71A1 1 0 0 1 6.29 8.29l5-5A1 1 0 0 1 12 3z" />
+                            <path d="M5 18a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2H5z" />
+                        </svg>
                     </div>
-                    <div class="input-group input-group-sm" style="min-width: 260px;">
+                    <p class="mb-1">Drag & drop images here</p>
+                    <p class="text-muted small">JPG, PNG, GIF, BMP, WebP up to 10MB</p>
+                    <input type="file" id="file-input" multiple accept="image/*" class="form-control mt-3">
+                    <div class="mt-2">
+                        <button id="browse-files" class="btn btn-outline-primary w-100">Browse Files...</button>
+                    </div>
+                </div>
+
+                <div class="actions-bar p-3 d-flex flex-column gap-3">
+                    <div class="d-grid gap-2">
+                        <button id="generate-all" class="btn btn-primary" disabled>Generate All Metadata</button>
+                        <button id="generate-selected" class="btn btn-outline-primary" disabled>Generate Selected</button>
+                        <button id="delete-selected" class="btn btn-outline-danger" disabled>Delete Selected</button>
+                        <button id="export" class="btn btn-success" disabled>Export to CSV</button>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="btn-group" role="group" aria-label="View mode">
+                            <input type="radio" class="btn-check" name="view-mode" id="view-grid" autocomplete="off">
+                            <label class="btn btn-outline-secondary btn-sm" for="view-grid">Grid</label>
+                            <input type="radio" class="btn-check" name="view-mode" id="view-list" autocomplete="off">
+                            <label class="btn btn-outline-secondary btn-sm" for="view-list">List</label>
+                            <input type="radio" class="btn-check" name="view-mode" id="view-table" autocomplete="off">
+                            <label class="btn btn-outline-secondary btn-sm" for="view-table">Table</label>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm">
                         <span class="input-group-text">Search</span>
                         <input id="search-input" type="text" class="form-control" placeholder="Filename, title, tags..." />
                     </div>
                     <div class="text-muted small" id="selection-info">0 selected</div>
+                    <div id="cost-estimate" class="border p-2 px-3" style="display: none; background: var(--panel-bg); border-color: var(--panel-border);">
+                        <span class="me-3">Fresh: <strong id="fresh-cost">$0.00</strong></span>
+                        <span>Cached: <strong id="cached-cost">$0.00</strong></span>
+                    </div>
                 </div>
-                <div id="cost-estimate" class="border p-2 px-3" style="display: none; background: var(--panel-bg); border-color: var(--panel-border);">
-                    <span class="me-3">Fresh: <strong id="fresh-cost">$0.00</strong></span>
-                    <span>Cached: <strong id="cached-cost">$0.00</strong></span>
-                </div>
-            </div>
-        </section>
+            </aside>
 
-        <section id="image-grid" class="row"></section>
+            <main class="content">
+                <section id="image-grid" class="row"></section>
+            </main>
+        </section>
     </div>
 
     <div id="settings-modal" class="modal fade" tabindex="-1">
@@ -546,8 +583,13 @@
                         renderImages(); updateSelectionInfo();
                     });
                 }
-            } else {
+            } else if (viewMode === 'grid') {
                 filtered.forEach(img => grid.appendChild(createGridCard(img)));
+            } else if (viewMode === 'list') {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'col-12';
+                filtered.forEach(img => wrapper.appendChild(createListItem(img)));
+                grid.appendChild(wrapper);
             }
 
             // Enable/disable action buttons
@@ -590,9 +632,13 @@
 
             // View mode setup
             document.getElementById('view-grid').checked = viewMode === 'grid';
-            document.getElementById('view-table').checked = viewMode === 'table';
+            const listRadio = document.getElementById('view-list');
+            const tableRadio = document.getElementById('view-table');
+            listRadio.checked = viewMode === 'list';
+            tableRadio.checked = viewMode === 'table';
             document.getElementById('view-grid').addEventListener('change', ()=>{ viewMode='grid'; localStorage.setItem('view-mode','grid'); renderImages(); });
-            document.getElementById('view-table').addEventListener('change', ()=>{ viewMode='table'; localStorage.setItem('view-mode','table'); renderImages(); });
+            listRadio.addEventListener('change', ()=>{ viewMode='list'; localStorage.setItem('view-mode','list'); renderImages(); });
+            tableRadio.addEventListener('change', ()=>{ viewMode='table'; localStorage.setItem('view-mode','table'); renderImages(); });
             document.getElementById('search-input').addEventListener('input', (e)=>{ searchQuery = e.target.value.trim(); renderImages(); });
         });
 
@@ -749,6 +795,57 @@
             return col;
         }
 
+        function createListItem(image) {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            const statusClass = image.status==='complete' ? 'status-complete' : image.status==='processing' ? 'status-processing' : image.status==='error' ? 'status-error' : 'status-ready';
+            item.dataset.imagePath = image.full_path;
+            item.innerHTML = `
+                <div class="list-left">
+                    <input type="checkbox" class="form-check-input select-checkbox" ${selectedPaths.has(image.full_path)?'checked':''}>
+                    <div class="list-thumb"><img src="${image.full_path}" alt="thumb" loading="lazy"></div>
+                </div>
+                <div class="list-main">
+                    <div class="list-file small text-muted">
+                        <span class="status-dot ${statusClass}"></span>
+                        <span class="filename" title="${image.full_path.split('/').pop()}">${image.full_path.split('/').pop()}</span>
+                    </div>
+                    <div class="list-fields">
+                        <input type="text" class="form-control title-input" placeholder="Title" value="${image.fields.title||''}">
+                        <textarea class="form-control description-input" placeholder="Description">${image.fields.description||''}</textarea>
+                        <input type="text" class="form-control tags-input" placeholder="Tags" value="${image.fields.tags||''}">
+                        <select class="form-select category-input">${generateCategoryOptions(currentProfile.categories, image.fields.category||'')}</select>
+                    </div>
+                </div>
+                <div class="list-right">
+                    <button class="btn btn-outline-primary btn-compact regenerate" title="Regenerate" aria-label="Regenerate">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 6h-2.06A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L14 10h6V4l-2.35 2.35z"/></svg>
+                    </button>
+                    <button class="btn btn-outline-danger btn-compact delete" title="Delete" aria-label="Delete">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 7h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7zm5-3h2a1 1 0 0 1 1 1v1h4v2H4V6h4V5a1 1 0 0 1 1-1z"/></svg>
+                    </button>
+                </div>
+            `;
+
+            // selection
+            item.querySelector('.select-checkbox').addEventListener('change', (e)=>{
+                if (e.target.checked) selectedPaths.add(image.full_path); else selectedPaths.delete(image.full_path); updateSelectionInfo();
+            });
+            // delete
+            item.querySelector('.delete').addEventListener('click', ()=>{
+                imagesState = imagesState.filter(i=>i.full_path!==image.full_path);
+                selectedPaths.delete(image.full_path);
+                renderImages(); updateSelectionInfo(); updateCostEstimate();
+            });
+            // regenerate
+            item.querySelector('.regenerate').addEventListener('click', ()=>queueGeneration([image.full_path]));
+
+            // sync inputs
+            syncInputsToState(item, image);
+
+            return item;
+        }
+
         function queueGeneration(paths) {
             if (!checkApiKey()) return;
             paths.forEach(p => {
@@ -791,7 +888,7 @@
                 if (badge) { badge.className = 'badge text-bg-info status-badge'; badge.textContent = 'Processing'; }
             }
             const item = getImageByPath(data.image);
-            if (item) { item.status = 'processing'; if (viewMode==='table') renderImages(); }
+            if (item) { item.status = 'processing'; if (viewMode==='table' || viewMode==='list') renderImages(); }
         });
 
         socket.on('metadata_update', (data) => {
@@ -818,7 +915,7 @@
             if (item) {
                 item.status = 'complete';
                 item.fields = { ...item.fields, ...data.metadata };
-                if (viewMode==='table') renderImages();
+                if (viewMode==='table' || viewMode==='list') renderImages();
             }
         });
 
@@ -827,7 +924,7 @@
             updateProgress();
             alert(`Error processing ${data.image}: ${data.message}`);
             const item = getImageByPath(data.image);
-            if (item) { item.status = 'error'; if (viewMode==='table') renderImages(); }
+            if (item) { item.status = 'error'; if (viewMode==='table' || viewMode==='list') renderImages(); }
         });
 
         // Export handling
